@@ -1,0 +1,17 @@
+[
+  "EVENT",
+  "FACTION",
+  "HOST",
+  "ID",
+  "INDEX",
+  "LANDED",
+  "NAME",
+  "POI_ID",
+  "PORT",
+  "POSITION",
+  "REGION_ID",
+  "TOKEN",
+  "USER_ID",
+  "USER_REQUEST",
+  "VEHICLE_IDX"
+]

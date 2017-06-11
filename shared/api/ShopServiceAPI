@@ -1,0 +1,21 @@
+{
+  "serviceName": "ShopService",
+  "serviceUri": "mn://shop",
+  "listeners": [
+    {
+      "listenerUri": "/shops/add",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/buy",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/shops/get",
+      "requestParameters": [],
+      "responseParameters": []
+    }
+  ]
+}

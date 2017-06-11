@@ -1,0 +1,3 @@
+#
+#Thu Jun 01 16:01:53 CEST 2017
+searchablePlugins=org.eclipse.jdt.apt.ui,org.eclipse.linuxtools.docker.ui

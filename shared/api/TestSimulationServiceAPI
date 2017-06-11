@@ -1,0 +1,20 @@
+{
+  "serviceName": "TestSimulationService",
+  "serviceUri": "mn://port",
+  "listeners": [
+    {
+      "listenerUri": "/release",
+      "requestDataType": "String",
+      "responseDataType": "String",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/reserve",
+      "requestDataType": "String",
+      "responseDataType": "String",
+      "requestParameters": [],
+      "responseParameters": []
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "serviceName": "RegionService",
+  "serviceUri": "mn://region",
+  "listeners": [
+    {
+      "listenerUri": "/add",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/battles/all",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/all",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/get",
+      "requestParameters": [],
+      "responseParameters": []
+    }
+  ]
+}

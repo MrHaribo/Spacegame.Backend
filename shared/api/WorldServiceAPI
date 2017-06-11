@@ -1,0 +1,31 @@
+{
+  "serviceName": "WorldService",
+  "serviceUri": "mn://world",
+  "listeners": [
+    {
+      "listenerUri": "/travel/home243222222",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/join653",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/instance/open",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/instance/close",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/travel",
+      "requestParameters": [],
+      "responseParameters": []
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "serviceName": "PortService",
+  "serviceUri": "mn://port",
+  "listeners": [
+    {
+      "listenerUri": "/release",
+      "requestParameters": [],
+      "responseParameters": []
+    },
+    {
+      "listenerUri": "/reserve",
+      "requestParameters": [],
+      "responseParameters": []
+    }
+  ]
+}
