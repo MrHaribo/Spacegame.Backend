@@ -3,29 +3,19 @@
   "serviceUri": "mn://world",
   "listeners": [
     {
-      "listenerUri": "/travel/home243222222",
-      "requestParameters": [],
-      "responseParameters": []
+      "listenerUri": "/travel/home243222222"
     },
     {
-      "listenerUri": "/join653",
-      "requestParameters": [],
-      "responseParameters": []
+      "listenerUri": "/join653"
     },
     {
-      "listenerUri": "/instance/open",
-      "requestParameters": [],
-      "responseParameters": []
+      "listenerUri": "/instance/open"
     },
     {
-      "listenerUri": "/instance/close",
-      "requestParameters": [],
-      "responseParameters": []
+      "listenerUri": "/instance/close"
     },
     {
-      "listenerUri": "/travel",
-      "requestParameters": [],
-      "responseParameters": []
+      "listenerUri": "/travel"
     }
   ]
 }

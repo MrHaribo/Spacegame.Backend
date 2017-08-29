@@ -1,16 +1,22 @@
 {
   "serviceName": "GatewayService",
   "serviceUri": "mn://gateway",
+  "description": "",
   "listeners": [
     {
       "listenerUri": "/broadcast/event",
-      "requestParameters": [],
-      "responseParameters": []
+      "description": ""
     },
     {
       "listenerUri": "/forward/event",
-      "requestParameters": [],
-      "responseParameters": []
+      "description": "",
+      "requestParameters": [
+        {
+          "code": "USER_ID",
+          "type": "Integer",
+          "description": ""
+        }
+      ]
     }
   ]
 }

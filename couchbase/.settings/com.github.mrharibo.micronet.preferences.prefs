@@ -1,3 +1,5 @@
+alias=couchbase
+container.name=couchbase
 eclipse.preferences.version=1
 enabled=false
 ports=8091-8094\:8091-8094,11210\:11210
