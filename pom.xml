@@ -23,5 +23,11 @@
     <module>ActiveMQ</module>
     <module>Couchbase</module>
     <module>Account</module>
+    <module>AvatarDB</module>
+    <module>Common</module>
+    <module>ItemDB</module>
+    <module>RegionDB</module>
+    <module>ShopDB</module>
+    <module>VehicleDB</module>
   </modules>
 </project>

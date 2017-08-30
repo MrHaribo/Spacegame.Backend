@@ -1,36 +1,47 @@
 {
   "serviceName": "VehicleService",
   "serviceUri": "mn://vehicle",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/add"
+      "listenerUri": "/add",
+      "description": ""
     },
     {
-      "listenerUri": "/change"
+      "listenerUri": "/change",
+      "description": ""
     },
     {
-      "listenerUri": "/collection/create"
+      "listenerUri": "/collection/create",
+      "description": ""
     },
     {
-      "listenerUri": "/collection/remove"
+      "listenerUri": "/collection/remove",
+      "description": ""
     },
     {
-      "listenerUri": "/available"
+      "listenerUri": "/available",
+      "description": ""
     },
     {
-      "listenerUri": "/current"
+      "listenerUri": "/current",
+      "description": ""
     },
     {
-      "listenerUri": "/weapon/equip"
+      "listenerUri": "/weapon/equip",
+      "description": ""
     },
     {
-      "listenerUri": "/sell"
+      "listenerUri": "/sell",
+      "description": ""
     },
     {
-      "listenerUri": "/weapon/unequip"
+      "listenerUri": "/weapon/unequip",
+      "description": ""
     },
     {
-      "listenerUri": "/configuration/all/upload"
+      "listenerUri": "/configuration/all/upload",
+      "description": ""
     }
   ]
 }

@@ -1,12 +1,15 @@
 {
   "serviceName": "PortService",
   "serviceUri": "mn://port",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/release"
+      "listenerUri": "/release",
+      "description": ""
     },
     {
-      "listenerUri": "/reserve"
+      "listenerUri": "/reserve",
+      "description": ""
     }
   ]
 }

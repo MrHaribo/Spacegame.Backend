@@ -1,18 +1,23 @@
 {
   "serviceName": "RegionService",
   "serviceUri": "mn://region",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/add"
+      "listenerUri": "/add",
+      "description": ""
     },
     {
-      "listenerUri": "/battles/all"
+      "listenerUri": "/battles/all",
+      "description": ""
     },
     {
-      "listenerUri": "/all"
+      "listenerUri": "/all",
+      "description": ""
     },
     {
-      "listenerUri": "/get"
+      "listenerUri": "/get",
+      "description": ""
     }
   ]
 }

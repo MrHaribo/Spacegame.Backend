@@ -1,21 +1,27 @@
 {
   "serviceName": "WorldService",
   "serviceUri": "mn://world",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/travel/home243222222"
+      "listenerUri": "/travel/home",
+      "description": ""
     },
     {
-      "listenerUri": "/join653"
+      "listenerUri": "/join",
+      "description": ""
     },
     {
-      "listenerUri": "/instance/open"
+      "listenerUri": "/instance/open",
+      "description": ""
     },
     {
-      "listenerUri": "/instance/close"
+      "listenerUri": "/instance/close",
+      "description": ""
     },
     {
-      "listenerUri": "/travel"
+      "listenerUri": "/travel",
+      "description": ""
     }
   ]
 }

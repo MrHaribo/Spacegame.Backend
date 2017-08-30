@@ -1,0 +1,71 @@
+{
+  "serviceName": "AvatarService2",
+  "serviceUri": "mn://avatarservice",
+  "description": "",
+  "listeners": [
+    {
+      "listenerUri": "/credits/add",
+      "description": ""
+    },
+    {
+      "listenerUri": "/reputation/add",
+      "description": ""
+    },
+    {
+      "listenerUri": "/credits/balance",
+      "description": ""
+    },
+    {
+      "listenerUri": "/create",
+      "description": ""
+    },
+    {
+      "listenerUri": "/delete",
+      "description": ""
+    },
+    {
+      "listenerUri": "/all",
+      "description": ""
+    },
+    {
+      "listenerUri": "/current/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/current/name/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/hello/world/handler",
+      "description": ""
+    },
+    {
+      "listenerUri": "/land",
+      "description": ""
+    },
+    {
+      "listenerUri": "/persist",
+      "description": ""
+    },
+    {
+      "listenerUri": "/credits/remove",
+      "description": ""
+    },
+    {
+      "listenerUri": "/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/current/set",
+      "description": ""
+    },
+    {
+      "listenerUri": "/takeoff",
+      "description": ""
+    },
+    {
+      "listenerUri": "/current/update",
+      "description": ""
+    }
+  ]
+}

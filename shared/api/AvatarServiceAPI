@@ -1,51 +1,67 @@
 {
   "serviceName": "AvatarService",
   "serviceUri": "mn://avatar",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/credits/add"
+      "listenerUri": "/credits/add",
+      "description": ""
     },
     {
-      "listenerUri": "/reputation/add"
+      "listenerUri": "/reputation/add",
+      "description": ""
     },
     {
-      "listenerUri": "/credits/balance"
+      "listenerUri": "/credits/balance",
+      "description": ""
     },
     {
-      "listenerUri": "/create"
+      "listenerUri": "/create",
+      "description": ""
     },
     {
-      "listenerUri": "/delete"
+      "listenerUri": "/delete",
+      "description": ""
     },
     {
-      "listenerUri": "/all"
+      "listenerUri": "/all",
+      "description": ""
     },
     {
-      "listenerUri": "/current/get"
+      "listenerUri": "/current/get",
+      "description": ""
     },
     {
-      "listenerUri": "/current/name/get"
+      "listenerUri": "/current/name/get",
+      "description": ""
     },
     {
-      "listenerUri": "/land"
+      "listenerUri": "/land",
+      "description": ""
     },
     {
-      "listenerUri": "/persist"
+      "listenerUri": "/persist",
+      "description": ""
     },
     {
-      "listenerUri": "/credits/remove"
+      "listenerUri": "/credits/remove",
+      "description": ""
     },
     {
-      "listenerUri": "/get"
+      "listenerUri": "/get",
+      "description": ""
     },
     {
-      "listenerUri": "/current/set"
+      "listenerUri": "/current/set",
+      "description": ""
     },
     {
-      "listenerUri": "/takeoff"
+      "listenerUri": "/takeoff",
+      "description": ""
     },
     {
-      "listenerUri": "/current/update"
+      "listenerUri": "/current/update",
+      "description": ""
     }
   ]
 }

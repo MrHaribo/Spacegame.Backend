@@ -1,30 +1,39 @@
 {
   "serviceName": "ItemService",
   "serviceUri": "mn://item",
+  "description": "",
   "listeners": [
     {
-      "listenerUri": "/inventory/add"
+      "listenerUri": "/inventory/add",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/create"
+      "listenerUri": "/inventory/create",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/get"
+      "listenerUri": "/inventory/get",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/all"
+      "listenerUri": "/inventory/all",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/move"
+      "listenerUri": "/inventory/move",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/refresh"
+      "listenerUri": "/inventory/refresh",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/remove"
+      "listenerUri": "/inventory/remove",
+      "description": ""
     },
     {
-      "listenerUri": "/inventory/set"
+      "listenerUri": "/inventory/set",
+      "description": ""
     }
   ]
 }
