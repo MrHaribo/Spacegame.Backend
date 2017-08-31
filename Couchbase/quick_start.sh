@@ -1,1 +1,1 @@
-docker run -p 61616:61616 --name couchbase --network mn_bridge_network --network-alias=couchbase couchbase
+docker run -p 8091-8094:8091-8094 -p 11210:11210 --name couchbase --network mn_bridge_network --network-alias=couchbase couchbase
