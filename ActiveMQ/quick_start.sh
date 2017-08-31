@@ -1,0 +1,1 @@
+docker run -p 61616:61616 --name activemq --network mn_bridge_network --network-alias=activemq activemq
