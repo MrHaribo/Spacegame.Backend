@@ -1,63 +1,52 @@
 ---
 version: "3"
 services:
-  activemq:
-    image: "activemq"
-    build: "./activemq"
-    ports:
-    - "61616:61616"
-  regionservice:
-    image: "regionservice"
-    build: "./RegionService"
-    links:
-    - "regiondb"
-  regiondb:
-    image: "regiondb"
-    build: "./RegionDB"
-  worldservice:
-    image: "worldservice"
-    build: "./WorldService"
-  vehicleservice:
-    image: "vehicleservice"
-    build: "./VehicleService"
-    links:
-    - "vehicledb"
-  itemdb:
-    image: "itemdb"
-    build: "./ItemDB"
-  gatewayservice:
-    image: "gatewayservice"
-    build: "./GatewayService"
-  avatardb:
-    image: "avatardb"
-    build: "./AvatarDB"
-  accountdb:
-    image: "accountdb"
-    build: "./AccountDB"
   avatarservice:
     image: "avatarservice"
-    build: "./AvatarService"
-    links:
-    - "avatardb"
-  vehicledb:
-    image: "vehicledb"
-    build: "./VehicleDB"
+    build: "AvatarService"
+    networks:
+    - "mn_bridge_network"
+  regionservice:
+    image: "regionservice"
+    build: "RegionService"
+    networks:
+    - "mn_bridge_network"
+  worldservice:
+    image: "worldservice"
+    build: "WorldService"
+    networks:
+    - "mn_bridge_network"
   shopservice:
     image: "shopservice"
-    build: "./ShopService"
-    links:
-    - "shopdb"
+    build: "ShopService"
+    networks:
+    - "mn_bridge_network"
   itemservice:
     image: "itemservice"
-    build: "./ItemService"
-    links:
-    - "itemdb"
+    build: "ItemService"
+    networks:
+    - "mn_bridge_network"
+  vehicleservice:
+    image: "vehicleservice"
+    build: "VehicleService"
+    networks:
+    - "mn_bridge_network"
   accountservice:
     image: "accountservice"
-    build: "./AccountService"
+    build: "Account\\AccountService"
+    networks:
+    - "mn_bridge_network"
+  gatewayservice:
+    image: "gatewayservice"
+    build: "GatewayService"
+    networks:
+    - "mn_bridge_network"
   portservice:
     image: "portservice"
-    build: "./PortService"
-  shopdb:
-    image: "shopdb"
-    build: "./ShopDB"
+    build: "PortService"
+    networks:
+    - "mn_bridge_network"
+networks:
+  mn_bridge_network:
+    external:
+      name: "mn_bridge_network"

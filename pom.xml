@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -19,15 +19,6 @@
     <module>AvatarService</module>
     <module>PortService</module>
     <module>RegionService</module>
-    <module>AccountService</module>
-    <module>ActiveMQ</module>
-    <module>Couchbase</module>
-    <module>Account</module>
-    <module>AvatarDB</module>
-    <module>Common</module>
-    <module>ItemDB</module>
-    <module>RegionDB</module>
-    <module>ShopDB</module>
-    <module>VehicleDB</module>
+    <module>Account\AccountService</module>
   </modules>
 </project>

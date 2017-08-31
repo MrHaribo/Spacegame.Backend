@@ -1,6 +1,7 @@
 package Spacegame.Account;
 
 import Spacegame.AccountService.CredentialValues;
+import Spacegame.AccountService.ParameterCode;
 import Spacegame.AccountService.UserValues;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
@@ -41,6 +42,13 @@ public class AccountService {
 		} else {
 			if (database.addUser(credentials)) {
 				System.out.println("User added: " + credentials.getUsername()); 
+				
+				// TODO: Manage via Topics
+				UserValues newUser = database.getUser(credentials.getUsername());
+				Request createInventoryRequest = new Request();
+				createInventoryRequest.getParameters().set(ParameterCode.USER_ID, newUser.getId());
+				context.sendRequest("mn://item/inventory/create", createInventoryRequest);
+				
 				return new Response(StatusCode.OK, "User registred");
 			} else {
 				return new Response(StatusCode.INTERNAL_SERVER_ERROR, "Error registering User");
