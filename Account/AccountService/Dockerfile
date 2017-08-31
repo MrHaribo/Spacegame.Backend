@@ -4,7 +4,7 @@ RUN mkdir --parents /usr/src/app
 WORKDIR /usr/src/app
 
 ENV message_broker_address="activemq:61616"
-ENV database_address="accountdb:5432"
+ENV database_address="fulldb:5432"
 
 ADD . /usr/src/app
 
