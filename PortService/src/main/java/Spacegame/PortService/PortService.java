@@ -1,5 +1,6 @@
 package Spacegame.PortService;
 
+import java.util.Collections;
 import java.util.Stack;
 
 import micronet.annotation.MessageListener;
@@ -15,7 +16,7 @@ import micronet.network.StatusCode;
 public class PortService {
 
 	private static final int portRangeStart = System.getenv("port_range_start") != null ? Integer.parseInt(System.getenv("port_range_start")) : 40000;
-	private static final int portRangeSize = System.getenv("port_range_size") != null ? Integer.parseInt(System.getenv("port_range_size")) : 10;
+	private static final int portRangeSize = System.getenv("port_range_size") != null ? Integer.parseInt(System.getenv("port_range_size")) : 1000;
 	
 	Stack<Integer> freePorts = new Stack<Integer>();
 
@@ -24,6 +25,7 @@ public class PortService {
 		for (int i = 0; i < portRangeSize; i++) {
 			freePorts.add(portRangeStart + i);
 		}
+		Collections.reverse(freePorts);
 	}
 	
 	@OnStop
