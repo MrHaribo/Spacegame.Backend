@@ -1,0 +1,36 @@
+{
+  "name": "POIValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "id",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "type",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "position",
+      "type": {
+        "geometryType": "VECTOR2",
+        "type": "GEOMETRY"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "seed",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    }
+  ]
+}

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 
 import org.postgresql.util.PGobject;
 
-import Spacegame.Common.ItemValues;
 import micronet.database.Database;
 import micronet.serialization.Serialization;
 

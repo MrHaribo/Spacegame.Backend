@@ -1,0 +1,122 @@
+{
+  "name": "RegionValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "id",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "name",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "worldPosition",
+      "type": {
+        "geometryType": "VECTOR2",
+        "type": "GEOMETRY"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "threadLevel",
+      "type": {
+        "numberType": "INT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "biomName",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "seed",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "faction",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "pois",
+      "type": {
+        "entryType": {
+          "componentType": "POIValues",
+          "type": "COMPONENT"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "levelType",
+      "type": {
+        "enumType": "LevelType",
+        "type": "ENUM"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "subregionCount",
+      "type": {
+        "scriptName": "regionSubCount",
+        "memberArgs": [
+          "id"
+        ],
+        "externalArgs": {},
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "randomizePosition",
+      "type": {
+        "scriptName": "regionPosition",
+        "memberArgs": [
+          "id"
+        ],
+        "externalArgs": {
+          "posX": {
+            "numberType": "FLOAT",
+            "type": "NUMBER"
+          },
+          "posY": {
+            "numberType": "FLOAT",
+            "type": "NUMBER"
+          }
+        },
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "regionAddress",
+      "type": {
+        "scriptName": "regionAddress",
+        "memberArgs": [
+          "id"
+        ],
+        "externalArgs": {},
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "VehicleValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "name",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "primaryWeapons",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "heavyWeapons",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    }
+  ]
+}

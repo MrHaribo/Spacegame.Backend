@@ -1,18 +1,21 @@
 {
   "name": "UserConnection",
+  "parent": null,
   "variables": [
     {
       "name": "connectionID",
       "type": {
         "type": "STRING"
-      }
+      },
+      "ctorArg": false
     },
     {
       "name": "userID",
       "type": {
         "numberType": "INT",
         "type": "NUMBER"
-      }
+      },
+      "ctorArg": false
     }
   ]
 }

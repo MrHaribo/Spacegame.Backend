@@ -21,6 +21,7 @@
     <module>RegionService</module>
     <module>Account\AccountService</module>
     <module>FullDB</module>
+    <module>FooService</module>
   </modules>
 
 	<properties>

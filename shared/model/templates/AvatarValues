@@ -1,0 +1,72 @@
+{
+  "name": "AvatarValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "name",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "faction",
+      "type": {
+        "componentType": "FactionValues",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "job",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "regionID",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "homeRegionID",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "poiID",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "landed",
+      "type": {
+        "type": "BOOLEAN"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "position",
+      "type": {
+        "geometryType": "VECTOR2",
+        "type": "GEOMETRY"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "credits",
+      "type": {
+        "numberType": "INT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    }
+  ]
+}

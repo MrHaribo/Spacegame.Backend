@@ -23,8 +23,6 @@ import com.couchbase.client.java.query.N1qlQueryRow;
 import com.couchbase.client.java.query.Statement;
 import com.couchbase.client.java.subdoc.DocumentFragment;
 
-import Spacegame.Common.ID;
-
 public class InstanceStore {
 	
 	private Cluster cluster;
@@ -38,14 +36,14 @@ public class InstanceStore {
         bucket.bucketManager().createN1qlPrimaryIndex(true, false);
 	}
 	
-	public void addInstance(ID regionID) {
+	public void addInstance(String regionID) {
         JsonObject instanceObj = JsonObject.create()
             .put("status", "opening")
             .put("queuedUsers", JsonArray.empty());
         bucket.insert(JsonDocument.create(regionID.toString(), instanceObj));
 	}
 
-	public void openInstance(ID regionID, String instanceID, String host, int port) {
+	public void openInstance(String regionID, String instanceID, String host, int port) {
 		DocumentFragment<Mutation> mutation = bucket
 		    .mutateIn(regionID.toString())
 		    .replace("status", "open")
@@ -56,29 +54,29 @@ public class InstanceStore {
 		System.out.println(mutation.toString());
 	}
 
-	public boolean existsInstance(ID regionID) {
+	public boolean existsInstance(String regionID) {
 		return bucket.get(regionID.toString()) != null;
 	}
 	
-	public void removeInstance(ID regionID) {
+	public void removeInstance(String regionID) {
 		bucket.remove(regionID.toString());
 	}
 
-	public boolean isRegionOpen(ID regionID) {
+	public boolean isRegionOpen(String regionID) {
 		JsonDocument regionDoc = bucket.get(regionID.toString());
 		if (regionDoc == null)
 			return false;
 		return regionDoc.content().getString("status").equals("open");
 	}
 
-	public boolean isRegionOpening(ID regionID) {
+	public boolean isRegionOpening(String regionID) {
 		JsonDocument regionDoc = bucket.get(regionID.toString());
 		if (regionDoc == null)
 			return false;
 		return regionDoc.content().getString("status").equals("opening");
 	}
 
-	public void queueUser(ID regionID, int userID) {
+	public void queueUser(String regionID, int userID) {
 		try {
 			DocumentFragment<Mutation> mutation = bucket
 			    .mutateIn(regionID.toString())
@@ -116,7 +114,7 @@ public class InstanceStore {
 
         
         if (list.size() == 0) {
-        	removeInstance(new ID(regionID));
+        	removeInstance(regionID);
         } else {
         	//TODO: Use Cas
             queuedUsers = JsonArray.from(list);
@@ -128,7 +126,7 @@ public class InstanceStore {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<Integer> getQueuedUsers(ID regionID) {
+	public List<Integer> getQueuedUsers(String regionID) {
 		DocumentFragment<Lookup> result = bucket
 		    .lookupIn(regionID.toString())
 		    .get("queuedUsers")
@@ -137,30 +135,30 @@ public class InstanceStore {
 		return (List<Integer>)(Object)users.toList();
 	}
 
-	public String getRegionInstance(ID regionID) {
+	public String getRegionInstance(String regionID) {
 		JsonDocument regionDoc = bucket.get(regionID.toString());
 		if (regionDoc == null)
 			return null;
 		return regionDoc.content().getString("instanceID");
 	}
 	
-	public ID getRegionFromInstance(String instanceID) {
+	public String getRegionFromInstance(String instanceID) {
 		Statement query = select("meta(instance_connections).id").from(i(bucket.name())).where(x("instanceID").eq(s(instanceID)));
         N1qlQueryResult result = bucket.query(N1qlQuery.simple(query));
 		
         for (N1qlQueryRow row : result) {
-        	return new ID(row.value().getString("id"));
+        	return new String(row.value().getString("id"));
         }
 
 		return null;
 	}
 	
-	public int getInstancePort(ID regionID) {
+	public int getInstancePort(String regionID) {
 		JsonDocument instanceDoc = bucket.get(regionID.toString());
 		return instanceDoc.content().getInt("port");
 	}
 
-	public Object getInstanceHost(ID regionID) {
+	public Object getInstanceHost(String regionID) {
 		JsonDocument instanceDoc = bucket.get(regionID.toString());
 		return instanceDoc.content().getString("host");
 	}

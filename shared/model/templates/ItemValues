@@ -1,0 +1,45 @@
+{
+  "name": "ItemValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "name",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "type",
+      "type": {
+        "enumType": "ItemType",
+        "type": "ENUM"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "quantity",
+      "type": {
+        "numberType": "INT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "maxStackSize",
+      "type": {
+        "numberType": "INT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "price",
+      "type": {
+        "numberType": "INT",
+        "type": "NUMBER"
+      },
+      "ctorArg": false
+    }
+  ]
+}

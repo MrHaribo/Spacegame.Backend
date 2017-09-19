@@ -3,9 +3,6 @@ package Spacegame.WorldService;
 import java.net.URI;
 import java.util.UUID;
 
-import Spacegame.Common.AvatarValues;
-import Spacegame.Common.ID;
-import Spacegame.Common.IDType;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
@@ -15,6 +12,7 @@ import micronet.network.IAdvisory;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
+import micronet.script.ScriptExecutor;
 import micronet.serialization.Serialization;
 
 @MessageService(uri="mn://world")
@@ -28,7 +26,7 @@ public class WorldService {
 		
 		context.getAdvisory().registerConnectionStateListener((String id, IAdvisory.ConnectionState state) -> {
 			if (state == IAdvisory.ConnectionState.DISCONNECTED) {
-				ID regionID = instanceStore.getRegionFromInstance(id);
+				String regionID = instanceStore.getRegionFromInstance(id);
 				if (regionID != null) {
 					int port = instanceStore.getInstancePort(regionID);
 					instanceStore.removeInstance(regionID);
@@ -52,11 +50,10 @@ public class WorldService {
 		Response avatarResponse = context.sendRequestBlocking("mn://avatar/current/set", request);
 		AvatarValues avatar = Serialization.deserialize(avatarResponse.getData(), AvatarValues.class);
 		
-		//Avatar is in an old battle
-		if (isMatchID(avatar.getRegionID())) {
-			return joinWorld(context, userID, avatar.getHomeRegionID(), avatarResponse.getData());
+		if (avatar.getRegionID() != null) {
+			return joinWorld(context, userID, avatar.getRegionID(), avatarResponse.getData());
 		}
-		return joinWorld(context, userID, avatar.getRegionID(), avatarResponse.getData());
+		return joinWorld(context, userID, avatar.getHomeRegionID(), avatarResponse.getData());
 	}
 	
 	@MessageListener(uri = "/travel/home")
@@ -72,9 +69,9 @@ public class WorldService {
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
 		Response avatarResponse = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarResponse.getData(), AvatarValues.class);
-		if (avatar.isLanded())
+		if (avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Must be in Space to Travel");
-		return joinWorld(context, userID, new ID(request.getData()), avatarResponse.getData());
+		return joinWorld(context, userID, request.getData(), avatarResponse.getData());
 	}
 
 
@@ -86,21 +83,21 @@ public class WorldService {
 		String host = request.getParameters().getString(ParameterCode.HOST);
 		int port = request.getParameters().getInt(ParameterCode.PORT);
 		
-		if (!instanceStore.existsInstance(new ID(regionID))) {
+		if (!instanceStore.existsInstance(new String(regionID))) {
 			context.sendRequest("mn://port/release", new Request(Integer.toString(port)));
 			return new Response(StatusCode.RESET_CONTENT, "Instance not used any longer");
 		}
 				
-		instanceStore.openInstance(new ID(regionID), instanceID, host, port);
+		instanceStore.openInstance(new String(regionID), instanceID, host, port);
 
 		//TODO: Notify Player that they can join
-		for (int userID : instanceStore.getQueuedUsers(new ID(regionID))) {
+		for (int userID : instanceStore.getQueuedUsers(new String(regionID))) {
 			
 			Request avatarRequest = new Request();
 			avatarRequest.getParameters().set(ParameterCode.USER_ID, userID);
 			Response avatarResponse = context.sendRequestBlocking("mn://avatar/current/get", avatarRequest);
 			
-			Response joinRegionResponse = joinRegion(context, userID, new ID(regionID), avatarResponse.getData());
+			Response joinRegionResponse = joinRegion(context, userID, new String(regionID), avatarResponse.getData());
 			
 			Request regionReadyRequest = new Request(avatarResponse.getData());
 			regionReadyRequest.getParameters().set(ParameterCode.TOKEN, joinRegionResponse.getParameters().getString(ParameterCode.TOKEN));
@@ -117,7 +114,7 @@ public class WorldService {
 
 	@MessageListener(uri = "/instance/close")
 	public Response resetInstance(Context context, Request request) {
-		ID regionID = new ID(request.getParameters().getString(ParameterCode.REGION_ID));
+		String regionID = new String(request.getParameters().getString(ParameterCode.REGION_ID));
 		int port = request.getParameters().getInt(ParameterCode.PORT);
 		
 		instanceStore.removeInstance(regionID);
@@ -125,7 +122,7 @@ public class WorldService {
 		return new Response(StatusCode.OK, "Instance Closed");
 	}
 
-	private Response joinWorld(Context context, int userID, ID regionID, String avatarData) {
+	private Response joinWorld(Context context, int userID, String regionID, String avatarData) {
 		// RegionID id = new RegionID(124554051589L);
 		// RegionValues region = new RegionValues(id);
 
@@ -162,15 +159,16 @@ public class WorldService {
 	}
 	
 
-	private Response joinRegion(Context context, int userID, ID regionID, String avatarData) {
+	private Response joinRegion(Context context, int userID, String regionID, String avatarData) {
 		// Generate PlayerToken (random UUIDs)
 		UUID token = UUID.randomUUID();
 		Request joinRequest = new Request(avatarData);
 		joinRequest.getParameters().set(ParameterCode.USER_ID, userID);
 		joinRequest.getParameters().set(ParameterCode.TOKEN, token.toString());
 
-		System.out.println("SENDING JOIN: " + regionID.getAddress() + "/join");
-		URI destination = URI.create(regionID.getAddress() + "/join");
+		Object address = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", regionID) + "/join";
+		System.out.println("SENDING JOIN: " + address);
+		URI destination = URI.create(address.toString());
 		Response joinResponse = context.sendRequestBlocking(destination.toString(), joinRequest);
 		if (joinResponse.getStatus() != StatusCode.OK)
 			return new Response(StatusCode.UNAUTHORIZED);
@@ -188,11 +186,4 @@ public class WorldService {
 
 		return response;
 	}
-	
-	private boolean isMatchID(ID id)
-    {
-        return id.getType() == IDType.Deathmath || 
-    		id.getType()  == IDType.TeamDeathmatch || 
-    		id.getType()  == IDType.Domination;
-    }
 }

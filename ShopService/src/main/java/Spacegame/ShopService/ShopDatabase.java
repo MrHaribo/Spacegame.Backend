@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import Spacegame.Common.ItemValues;
 import micronet.database.Database;
 import micronet.serialization.Serialization;
 

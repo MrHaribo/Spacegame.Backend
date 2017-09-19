@@ -1,19 +1,22 @@
 {
   "name": "UserValues",
+  "parent": null,
   "variables": [
     {
       "name": "id",
       "type": {
         "numberType": "INT",
         "type": "NUMBER"
-      }
+      },
+      "ctorArg": false
     },
     {
       "name": "credentials",
       "type": {
         "componentType": "CredentialValues",
         "type": "COMPONENT"
-      }
+      },
+      "ctorArg": false
     }
   ]
 }

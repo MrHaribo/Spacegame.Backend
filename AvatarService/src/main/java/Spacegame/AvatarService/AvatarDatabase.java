@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import org.postgresql.util.PGobject;
 
-import Spacegame.Common.AvatarValues;
 import micronet.database.Database;
 import micronet.serialization.Serialization;
 

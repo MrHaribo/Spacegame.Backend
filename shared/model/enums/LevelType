@@ -1,0 +1,8 @@
+{
+  "name": "LevelType",
+  "variables": [
+    "Planet",
+    "AsteroidField",
+    "Cave"
+  ]
+}

@@ -1,9 +1,5 @@
 package Spacegame.ShopService;
 
-import Spacegame.Common.AvatarValues;
-import Spacegame.Common.ID;
-import Spacegame.Common.ItemValues;
-import Spacegame.Common.RegionValues;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
@@ -48,7 +44,7 @@ public class ShopService {
 	@MessageListener(uri = "/buy")
 	public Response buy(Context context, Request request) {
 		int userId = request.getParameters().getInt(ParameterCode.USER_ID);
-		int type = request.getParameters().getInt(ParameterCode.ID);
+		ItemType type = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
 		Integer[] indices = Serialization.deserialize(request.getData(), Integer[].class);
 
 		Request avatarRequest = new Request();
@@ -56,15 +52,15 @@ public class ShopService {
 		Response avatarResponse = context.sendRequestBlocking("mn://avatar/current/get", avatarRequest);
 		AvatarValues avatar = Serialization.deserialize(avatarResponse.getData(), AvatarValues.class);
 
-		if (!avatar.isLanded())
+		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Must be landed");
 
-		ID regionID = avatar.getRegionID();
-		Request regionRequest = new Request(regionID.toString());
+		String regionID = avatar.getRegionID();
+		Request regionRequest = new Request(regionID);
 		Response regionResponse = context.sendRequestBlocking("mn://region/get", regionRequest);
 		RegionValues region = Serialization.deserialize(regionResponse.getData(), RegionValues.class);
 		
-		if (avatar.getFaction().isHostile(region.getFaction()))
+		if ((boolean)avatar.getFaction().isHostile(region.getFaction()))
 			return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: Hostile Planet");
 
 		int[] rankRestrictions = database.getRankRestrictions(region.getFaction());
@@ -72,7 +68,7 @@ public class ShopService {
 		if (restriction > 0) {
 			if (!avatar.getFaction().getName().equals(region.getFaction()))
 				return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: You have the wrong Faction");
-			if (avatar.getFaction().getRank() < restriction)
+			if ((int)avatar.getFaction().getRank() < restriction)
 				return new Response(StatusCode.FORBIDDEN, "Insufficient Rank: Required " + restriction + " (Current " + avatar.getFaction().getRank() + ")");
 		}
 		
@@ -86,7 +82,7 @@ public class ShopService {
 		System.out.println("Buy Request: " + itemToBuy.getName());
 
 		Response inventoryResponse = null;
-		if (type == ItemValues.ItemType.Vehicle) {
+		if (type == ItemType.Vehicle) {
 			inventoryResponse = buyVehicle(context, userId, itemToBuy);
 		} else if (indices.length == 2) {
 			inventoryResponse = buyItem(context, userId, itemToBuy, indices[1]);

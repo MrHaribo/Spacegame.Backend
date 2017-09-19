@@ -5,15 +5,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import Spacegame.Common.ID;
-import Spacegame.Common.IDType;
-import Spacegame.Common.RegionValues;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
 import micronet.annotation.OnStop;
 import micronet.network.Context;
 import micronet.network.IAdvisory.QueueState;
+import micronet.script.ScriptExecutor;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
@@ -22,8 +20,8 @@ import micronet.serialization.Serialization;
 @MessageService(uri="mn://region")
 public class RegionService {
 
-	private static final ID[] confederateBattleRegions = { new ID(IDType.MasterRegion, (short) 37), new ID(IDType.MasterRegion, (short) 38), };
-	private static final ID[] rebelBattleRegions = { new ID(IDType.MasterRegion, (short) 31), new ID(IDType.MasterRegion, (short) 34), };
+	private static final String[] confederateBattleRegions = { "Region.37", "Region.38", };
+	private static final String[] rebelBattleRegions = { "Region.31", "Region.34", };
 	
 	int battleRegionCount = 42;
 	Set<RegionValues> battleRegions = Collections.synchronizedSet(new HashSet<>());
@@ -50,13 +48,13 @@ public class RegionService {
 	// generation does not work in java yet
 	@MessageListener(uri = "/get")
 	public Response getRegion(Context context, Request request) {
-		ID regionID = new ID(request.getData());
+		String regionID = request.getData();
 
-		RegionValues region = database.getMasterRegion(regionID.getMasterID());
+		RegionValues region = database.getMasterRegion(regionID);
 		if (region == null)
 			return new Response(StatusCode.NOT_IMPLEMENTED, "Master Region not found");
 
-		region.setID(regionID);
+		region.setId(regionID);
 		Response regionResponse = new Response(StatusCode.OK, Serialization.serialize(region));
 		return regionResponse;
 	}
@@ -82,28 +80,30 @@ public class RegionService {
 	
 	private void CreateBattleRegions(Context context) {
 		battleRegions = Collections.synchronizedSet(new HashSet<>());
-		CreateBattleRegion(context, IDType.Deathmath, confederateBattleRegions[0]);
-		CreateBattleRegion(context, IDType.Deathmath, confederateBattleRegions[1]);
-		CreateBattleRegion(context, IDType.Deathmath, rebelBattleRegions[0]);
-		CreateBattleRegion(context, IDType.Deathmath, rebelBattleRegions[1]);
+		CreateBattleRegion(context, MatchType.Deathmatch, confederateBattleRegions[0]);
+		CreateBattleRegion(context, MatchType.Deathmatch, confederateBattleRegions[1]);
+		CreateBattleRegion(context, MatchType.Deathmatch, rebelBattleRegions[0]);
+		CreateBattleRegion(context, MatchType.Deathmatch, rebelBattleRegions[1]);
 	}
 	
-	private void CreateBattleRegion(Context context, byte type, ID masterBattleRegionID) {
-		CreateBattleRegion(context, new ID(type, (short) battleRegionCount++, masterBattleRegionID));
+	private void CreateBattleRegion(Context context, MatchType type, String masterBattleRegionID) {
+		String battleRegionID = "Battle.Region." + masterBattleRegionID  + "." + battleRegionCount++;
+		CreateBattleRegion(context, battleRegionID);
 	}
 
-	private void CreateBattleRegion(Context context, ID battleRegionID) {
+	private void CreateBattleRegion(Context context, String battleRegionID) {
 		Response getRegionResponse = getRegion(context, new Request(battleRegionID.toString()));
 		RegionValues battleRegion = Serialization.deserialize(getRegionResponse.getData(), RegionValues.class);
 		battleRegions.add(battleRegion);
 		
 		context.broadcastEvent("OnBattleRegionsChanged", Serialization.serialize(battleRegions));
 		
-		context.getAdvisory().registerQueueStateListener(battleRegion.getID().getURI().toString(), (QueueState state) -> {
+		Object id = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", battleRegionID);
+		context.getAdvisory().registerQueueStateListener(id.toString(), (QueueState state) -> {
 			if (state == QueueState.CLOSE) {
 				battleRegions.remove(battleRegion);
-				context.getAdvisory().unregisterQueueStateListener(battleRegion.getID().getURI().toString());
-				CreateBattleRegion(context, battleRegion.getID().getType(), battleRegion.getID().getMasterID());
+				context.getAdvisory().unregisterQueueStateListener(id.toString());
+				//CreateBattleRegion(context, id.toString(), confederateBattleRegions[0]);
 			}
 		});
 	}

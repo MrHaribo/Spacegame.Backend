@@ -3,10 +3,6 @@ package Spacegame.AvatarService;
 import java.util.HashMap;
 import java.util.Map;
 
-import Spacegame.Common.AvatarValues;
-import Spacegame.Common.FactionValues;
-import Spacegame.Common.ID;
-import Spacegame.Common.IDType;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
@@ -15,6 +11,7 @@ import micronet.network.Context;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
+import micronet.script.ScriptExecutor;
 import micronet.serialization.Serialization;
 
 @MessageService(uri="mn://avatar")  
@@ -24,6 +21,22 @@ public class AvatarService {
 
 	// TODO: Avatars could be cached
 	private Map<Integer, String> avatars = new HashMap<>();
+	
+	public static void main(String[] args) {
+
+		Object invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("testScript");
+		System.out.println(invokeFunction);
+
+		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
+		System.out.println(invokeFunction);
+		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
+		System.out.println(invokeFunction);
+		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
+		System.out.println(invokeFunction);
+		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
+		System.out.println(invokeFunction);
+		
+	}
 	
 	@OnStart
 	public void onStart(Context context) {
@@ -87,7 +100,7 @@ public class AvatarService {
 	@MessageListener(uri="/reputation/add")
 	public void addReputation(Context context, Request request) {
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
-		int attitude = request.getParameters().getInt(ParameterCode.FACTION);
+		String attitude = request.getParameters().getString(ParameterCode.FACTION);
 		float amount = Float.parseFloat(request.getData());
 
 		if (!avatars.containsKey(userID))
@@ -95,7 +108,10 @@ public class AvatarService {
 		String avatarName = avatars.get(userID);
 
 		database.updateAvatar(userID, avatarName, (AvatarValues tmp) -> {
-			tmp.getFaction().addReputation(attitude, amount);
+			if (attitude.equals(FactionValues.AttitudeConfederate))
+				tmp.getFaction().setConfederateReputation(tmp.getFaction().getConfederateReputation() + amount);
+			if (attitude.equals(FactionValues.AttitudeRebel))
+				tmp.getFaction().setRebelReputation(tmp.getFaction().getRebelReputation() + amount);
 			return tmp;
 		});
 		
@@ -107,26 +123,26 @@ public class AvatarService {
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
-		if (avatar.isLanded())
+		if (avatar.getLanded())
 			return new Response(StatusCode.BAD_REQUEST, "Already Landed");
 
 		
-		ID regionID = avatar.getRegionID();
-		System.out.println("SENDING LAND: " + regionID.getQueueAddress("/land").toString());
-		Response landResponse = context.sendRequestBlocking(regionID.getQueueAddress("/land").toString(), request);
+		String regionId = avatar.getRegionID();
+		String queue = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", regionId).toString() + "/land";
+		System.out.println("SENDING LAND: " + queue);
+		Response landResponse = context.sendRequestBlocking(queue, request);
 
 		if (landResponse.getStatus() != StatusCode.OK)
 			return landResponse;
 
 		database.updateAvatar(userID, avatar.getName(), (AvatarValues tmp) -> {
 			tmp.setPosition(landResponse.getParameters().getVector2(ParameterCode.POSITION));
-			tmp.setPoiID(new ID(landResponse.getParameters().getString(ParameterCode.POI_ID)));
+			tmp.setPoiID(landResponse.getParameters().getString(ParameterCode.POI_ID));
 			tmp.setLanded(true);
 			return tmp;
 		});
 
-		System.out.println(
-				avatar.getName() + " lands on " + landResponse.getParameters().getString(ParameterCode.POI_ID));
+		System.out.println(avatar.getName() + " lands on " + landResponse.getParameters().getString(ParameterCode.POI_ID));
 		return new Response(StatusCode.OK);
 	}
 
@@ -135,11 +151,13 @@ public class AvatarService {
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
-		if (!avatar.isLanded())
+		if (!avatar.getLanded())
 			return new Response(StatusCode.BAD_REQUEST, "Already InSpace");
 
-		ID regionID = avatar.getRegionID();
-		Response takeoffResponse = context.sendRequestBlocking(regionID.getQueueAddress("/takeoff").toString(), request);
+		String regionId = avatar.getRegionID();
+		String queue = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", regionId).toString() + "/takeoff";
+		System.out.println("SENDING TAKEOFF: " + queue);
+		Response takeoffResponse = context.sendRequestBlocking(queue, request);
 
 		if (takeoffResponse.getStatus() != StatusCode.OK)
 			return takeoffResponse;
@@ -203,18 +221,18 @@ public class AvatarService {
 		avatar.setCredits(1000);
 
 		String faction = request.getParameters().getString(ParameterCode.FACTION);
-		if (faction.equals("Rebel")) {
-			avatar.setFaction(new FactionValues(FactionValues.Attitude.Rebel));
-			avatar.setRegionID(new ID(IDType.MasterRegion, (short) 32));
-			avatar.setHomeRegionID(new ID(IDType.MasterRegion, (short) 32));
-		} else if (faction.equals("Confederate")) {
-			avatar.setFaction(new FactionValues(FactionValues.Attitude.Confederate));
-			avatar.setRegionID(new ID(IDType.MasterRegion, (short) 33));
-			avatar.setHomeRegionID(new ID(IDType.MasterRegion, (short) 33));
-		} else if (faction.equals("Neutral")) {
-			avatar.setFaction(new FactionValues(FactionValues.Attitude.Neutral));
-			avatar.setRegionID(new ID(IDType.MasterRegion, (short) 1));
-			avatar.setHomeRegionID(new ID(IDType.MasterRegion, (short) 1));
+		if (faction.equals(FactionValues.AttitudeRebel)) {
+			avatar.setFaction(new FactionValues(-0.3f, 0.4f));
+			avatar.setRegionID("Region.32");
+			avatar.setHomeRegionID("Region.32");
+		} else if (faction.equals(FactionValues.AttitudeConfederate)) {
+			avatar.setFaction(new FactionValues(0.4f, -0.3f));
+			avatar.setRegionID("Region.33");
+			avatar.setHomeRegionID("Region.33");
+		} else if (faction.equals(FactionValues.AttitudeNeutral)) {
+			avatar.setFaction(new FactionValues(0, 0));
+			avatar.setRegionID("Region.1");
+			avatar.setHomeRegionID("Region.1");
 		}
 
 		database.addAvatar(userID, avatar);
@@ -248,7 +266,7 @@ public class AvatarService {
 
 		database.updateAvatar(userID, avatarName, (AvatarValues avatar) -> {
 			if (request.getParameters().containsParameter(ParameterCode.REGION_ID))
-				avatar.setRegionID(new ID(request.getParameters().getString(ParameterCode.REGION_ID)));
+				avatar.setRegionID(request.getParameters().getString(ParameterCode.REGION_ID));
 			if (request.getParameters().containsParameter(ParameterCode.POSITION))
 				avatar.setPosition(request.getParameters().getVector2(ParameterCode.POSITION));
 			return avatar;
@@ -262,7 +280,7 @@ public class AvatarService {
 
 		database.updateAvatar(userID, avatarName, (AvatarValues avatar) -> {
 			if (request.getParameters().containsParameter(ParameterCode.REGION_ID))
-				avatar.setRegionID(new ID(request.getParameters().getString(ParameterCode.REGION_ID)));
+				avatar.setRegionID(request.getParameters().getString(ParameterCode.REGION_ID));
 			if (request.getParameters().containsParameter(ParameterCode.POSITION))
 				avatar.setPosition(request.getParameters().getVector2(ParameterCode.POSITION));
 			return avatar;

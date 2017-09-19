@@ -1,0 +1,160 @@
+{
+  "name": "FactionValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "confederateReputation",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "rebelReputation",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "AttitudeNeutral",
+      "type": {
+        "type": "STRING"
+      },
+      "constVar": "Neutral"
+    },
+    {
+      "name": "AttitudeConfederate",
+      "type": {
+        "type": "STRING"
+      },
+      "constVar": "Confederate"
+    },
+    {
+      "name": "AttitudeRebel",
+      "type": {
+        "type": "STRING"
+      },
+      "constVar": "Rebel"
+    },
+    {
+      "name": "AttitudeOutlaw",
+      "type": {
+        "type": "STRING"
+      },
+      "constVar": "Outlaw"
+    },
+    {
+      "name": "PercentageRank1",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "constVar": 0.3
+    },
+    {
+      "name": "PercentageRank2",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "constVar": 0.6
+    },
+    {
+      "name": "PercentageRank3",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "constVar": 0.95
+    },
+    {
+      "name": "PercentageHostile",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "constVar": -0.2
+    },
+    {
+      "name": "PercentageHateful",
+      "type": {
+        "numberType": "FLOAT",
+        "type": "NUMBER"
+      },
+      "constVar": -0.8
+    },
+    {
+      "name": "getAttitude",
+      "type": {
+        "scriptName": "factionAttitude",
+        "memberArgs": [
+          "confederateReputation",
+          "rebelReputation",
+          "PercentageRank1",
+          "PercentageHateful",
+          "AttitudeNeutral",
+          "AttitudeConfederate",
+          "AttitudeRebel",
+          "AttitudeOutlaw"
+        ],
+        "externalArgs": {},
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "getRank",
+      "type": {
+        "scriptName": "factionRank",
+        "memberArgs": [
+          "getAttitude",
+          "confederateReputation",
+          "rebelReputation",
+          "AttitudeConfederate",
+          "AttitudeRebel",
+          "PercentageRank1",
+          "PercentageRank2",
+          "PercentageRank3"
+        ],
+        "externalArgs": {},
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "getName",
+      "type": {
+        "scriptName": "factionName",
+        "memberArgs": [
+          "getAttitude"
+        ],
+        "externalArgs": {},
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "isHostile",
+      "type": {
+        "scriptName": "factionHostile",
+        "memberArgs": [
+          "AttitudeNeutral",
+          "AttitudeConfederate",
+          "AttitudeRebel",
+          "AttitudeOutlaw",
+          "getAttitude"
+        ],
+        "externalArgs": {
+          "otherAttitude": {
+            "type": "STRING"
+          }
+        },
+        "type": "SCRIPT"
+      },
+      "ctorArg": false
+    }
+  ]
+}

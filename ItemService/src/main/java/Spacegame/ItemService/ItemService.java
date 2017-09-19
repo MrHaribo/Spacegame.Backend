@@ -1,6 +1,5 @@
 package Spacegame.ItemService;
 
-import Spacegame.Common.ItemValues;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;

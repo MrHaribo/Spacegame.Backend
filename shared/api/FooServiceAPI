@@ -1,0 +1,34 @@
+{
+  "serviceName": "FooService",
+  "serviceUri": "mn://foo",
+  "description": "",
+  "listeners": [
+    {
+      "listenerUri": "/hello",
+      "description": "",
+      "requestParameters": [
+        {
+          "code": "ID",
+          "type": "Integer",
+          "description": ""
+        },
+        {
+          "code": "NAME",
+          "type": "String",
+          "description": ""
+        }
+      ],
+      "responseParameters": [
+        {
+          "code": "ID",
+          "type": "Integer",
+          "description": ""
+        }
+      ],
+      "requestPayload": "UserValues",
+      "responsePayload": "CredentialValues",
+      "requestPayloadDescription": "",
+      "responsePayloadDescription": ""
+    }
+  ]
+}

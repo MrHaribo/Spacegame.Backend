@@ -3,10 +3,6 @@ package Spacegame.VehicleService;
 import java.util.HashMap;
 import java.util.Map;
 
-import Spacegame.Common.AvatarValues;
-import Spacegame.Common.ItemValues;
-import Spacegame.Common.ItemValues.ItemType;
-import Spacegame.Common.VehicleValues;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
@@ -50,7 +46,7 @@ public class VehicleService {
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarQuery.getData(), AvatarValues.class);
 
-		if (!avatar.isLanded())
+		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Must be landed to change Ship");
 
 		database.setCurrentVehicle(userID, avatar.getName(), Integer.parseInt(request.getData()));
@@ -141,11 +137,11 @@ public class VehicleService {
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarQuery.getData(), AvatarValues.class);
 
-		if (!avatar.isLanded())
+		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
-		int weaponType = request.getParameters().getInt(ParameterCode.ID);
+		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatar.getName());
 
 		Request itemRequest = new Request();
@@ -158,15 +154,17 @@ public class VehicleService {
 			return new Response(StatusCode.CONFLICT, "WeaponType Missmatch");
 
 		switch (weaponType) {
-		case ItemType.PrimaryWeapon:
-			if (vehicle.getPrimaryWeapons()[indices[1]] != null)
+		case PrimaryWeapon:
+			if (vehicle.getPrimaryWeapons().get(indices[1]) != null)
 				return new Response(StatusCode.CONFLICT, "Unequip Weapon first");
-			vehicle.getPrimaryWeapons()[indices[1]] = item.getName();
+			vehicle.getPrimaryWeapons().set(indices[1], item.getName());
 			break;
-		case ItemType.HeavyWeapon:
-			if (vehicle.getHeavyWeapons()[indices[1]] != null)
+		case HeavyWeapon:
+			if (vehicle.getHeavyWeapons().get(indices[1]) != null)
 				return new Response(StatusCode.CONFLICT, "Unequip Weapon first");
-			vehicle.getHeavyWeapons()[indices[1]] = item.getName();
+			vehicle.getHeavyWeapons().set(indices[1], item.getName());
+			break;
+		default:
 			break;
 		}
 
@@ -187,7 +185,7 @@ public class VehicleService {
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarQuery.getData(), AvatarValues.class);
 
-		if (!avatar.isLanded())
+		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
 		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
@@ -198,10 +196,10 @@ public class VehicleService {
 
 		switch (weaponType) {
 		case "PrimaryWeapon":
-			item = new ItemValues(vehicle.getPrimaryWeapons()[indices[0]], ItemType.PrimaryWeapon);
+			item = new ItemValues(vehicle.getPrimaryWeapons().get(indices[0]), ItemType.PrimaryWeapon);
 			break;
 		case "HeavyWeapon":
-			item = new ItemValues(vehicle.getHeavyWeapons()[indices[0]], ItemType.HeavyWeapon);
+			item = new ItemValues(vehicle.getHeavyWeapons().get(indices[0]), ItemType.HeavyWeapon);
 			break;
 		}
 
@@ -215,10 +213,10 @@ public class VehicleService {
 
 		switch (weaponType) {
 		case "PrimaryWeapon":
-			vehicle.getPrimaryWeapons()[indices[0]] = null;
+			vehicle.getPrimaryWeapons().set(indices[0], null);
 			break;
 		case "HeavyWeapon":
-			vehicle.getHeavyWeapons()[indices[0]] = null;
+			vehicle.getHeavyWeapons().set(indices[0], null);
 			break;
 		}
 		int currentVehicleIndex = database.getCurrentVehicleIndex(userID, avatar.getName());
