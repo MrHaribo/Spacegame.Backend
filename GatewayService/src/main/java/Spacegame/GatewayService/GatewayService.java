@@ -14,7 +14,6 @@ import micronet.network.NetworkConstants;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
-import micronet.serialization.Serialization;
 
 @MessageService(uri="mn://gateway")
 public class GatewayService {
@@ -26,11 +25,11 @@ public class GatewayService {
 	@OnStart
 	public void onStart(Context context) {
 		gatewayPeer = new AMQGatewayPeer((String connectionID) -> {
-			UserConnection connection = connections.get(connectionID);
+			UserConnection connection = connections.getUserFromConnection(connectionID);
 			if (connection == null)
 				return;
 			connections.remove(connectionID);
-            context.getAdvisory().send("User.Disconnected", Integer.toString(connection.getUserID()));
+            context.getAdvisory().send("User.Disconnected", connection.getUserID());
 
 		});
 		gatewayPeer.listen(URI.create(NetworkConstants.COMMAND_QUEUE), (String clientId, Request request) -> clientCmd(context, clientId, request));
@@ -46,8 +45,8 @@ public class GatewayService {
 	@RequestParameters(@MessageParameter(code=ParameterCode.USER_ID, type=Integer.class))
 	public void forwardEvent(Context context, Request request) {
 		// TODO: Dont send back userId (security)
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
-		UserConnection connection = connections.get(userID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		UserConnection connection = connections.getConnectionFromUser(userID);
 		gatewayPeer.sendRequest(URI.create(connections.getConnectionURI(connection) + "/event"), request);
 	}
 	
@@ -59,14 +58,13 @@ public class GatewayService {
 	}
 
 	private void clientCmd(Context context, String connectionID, Request request) {
-		UserConnection connection = connections.get(connectionID);
+		UserConnection connection = connections.getUserFromConnection(connectionID);
 		if (connection == null)
 			return;
 		String userRequest = request.getParameters().getString(ParameterCode.USER_REQUEST);
 		System.out.println("CMD " + connectionID + " -> " + userRequest + ": " + request.getData());
-		Request forwardRequest = new Request(request.getData());
-		forwardRequest.getParameters().set(ParameterCode.USER_ID, connection.getUserID());
-		context.sendRequest(userRequest, forwardRequest);
+		request.getParameters().set(ParameterCode.USER_ID, connection.getUserID());
+		context.sendRequest(userRequest, request);
 	}
 
 	private Response clientRequest(Context context, String connectionID, Request request) {
@@ -74,30 +72,24 @@ public class GatewayService {
 		String userRequest = request.getParameters().getString(ParameterCode.USER_REQUEST);
 		System.out.println("REQUEST " + connectionID + " -> " + userRequest + ": " + request.getData());
 		
-		UserConnection connection = connections.get(connectionID);
+		UserConnection connection = connections.getUserFromConnection(connectionID);
 
 		switch (userRequest) {
-		case "mn://account/register":
-			return context.sendRequestBlocking(userRequest, request);
+		case "mn://login/":
+			if (connection != null)
+				return new Response(StatusCode.FORBIDDEN, "Already logged in");
+			String userID = request.getData();
+			connection = connections.getConnectionFromUser(userID);
+			if (connection != null)
+				connections.remove(connection.getConnectionID());
+				//return new Response(StatusCode.FORBIDDEN, "User ID already in use");
+			connection = connections.add(connectionID, userID);
+			return new Response(StatusCode.OK);
 		case "mn://logout/":
 			if (connection == null)
 				return new Response(StatusCode.FORBIDDEN, "You are not logged in");
 			connections.remove(connectionID);
 			return new Response(StatusCode.OK, "Logged Out");
-		case "mn://account/login":
-			if (connection != null)
-				return new Response(StatusCode.FORBIDDEN, "Already logged in");
-			Response loginResponse = context.sendRequestBlocking(userRequest, request);
-			if (loginResponse.getStatus() == StatusCode.OK) {
-				int userID = Serialization.deserialize(loginResponse.getData(), Integer.class);
-				connection = connections.get(userID);
-				if (connection != null)
-					connections.remove(connection.getConnectionID());
-					//return new Response(StatusCode.FORBIDDEN, "User ID already in use");
-				connection = connections.add(connectionID, userID);
-				return new Response(StatusCode.OK);
-			}
-			return loginResponse;
 		default:
 			if (connection == null)
 				return new Response(StatusCode.UNAUTHORIZED, "Not Authenticated: Only register and login possible");

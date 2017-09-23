@@ -1,0 +1,16 @@
+{
+  "name": "World",
+  "parent": null,
+  "variables": [
+    {
+      "name": "regions",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    }
+  ]
+}

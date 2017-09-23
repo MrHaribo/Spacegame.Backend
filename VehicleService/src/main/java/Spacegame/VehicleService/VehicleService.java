@@ -42,7 +42,7 @@ public class VehicleService {
 
 	@MessageListener(uri = "/change")
 	public Response changeVehicle(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarQuery.getData(), AvatarValues.class);
 
@@ -56,7 +56,7 @@ public class VehicleService {
 
 	@MessageListener(uri = "/sell")
 	public Response sellVehicle(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
 
@@ -78,7 +78,7 @@ public class VehicleService {
 
 	@MessageListener(uri = "/current")
 	public Response getCurrentVehicle(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatarQuery.getData());
@@ -90,7 +90,7 @@ public class VehicleService {
 
 	@MessageListener(uri = "/add")
 	public Response addVehicle(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
 		ItemValues vehicleItem = Serialization.deserialize(request.getData(), ItemValues.class);
@@ -103,7 +103,7 @@ public class VehicleService {
 
 	@MessageListener(uri = "/available")
 	public Response getAvailableVehicles(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
 		VehicleValues[] vehicles = database.getVehicles(userID, avatarName);
@@ -116,14 +116,14 @@ public class VehicleService {
 
 	@MessageListener(uri = "/collection/remove")
 	public Response deleteVehicleCollection(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		database.deleteVehicleCollection(userID, request.getData());
 		return new Response(StatusCode.OK);
 	}
 
 	@MessageListener(uri = "/collection/create")
 	public Response createVehicleCollection(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String faction = request.getParameters().getString(ParameterCode.FACTION);
 		database.createVehicleCollection(userID, request.getData());
 		database.addVehicle(userID, request.getData(), defaultVehicles.get(faction));
@@ -140,7 +140,7 @@ public class VehicleService {
 		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatar.getName());
 
@@ -188,7 +188,7 @@ public class VehicleService {
 		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String weaponType = request.getParameters().getString(ParameterCode.ID);
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatar.getName());
 
@@ -225,14 +225,14 @@ public class VehicleService {
 		return new Response(StatusCode.OK);
 	}
 
-	private void sendVehicleChangedEvent(Context context, int userID, String avatarName) {
+	private void sendVehicleChangedEvent(Context context, String userID, String avatarName) {
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatarName);
 		Request eventRequest = new Request(Serialization.serialize(vehicle));
 		eventRequest.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, avatarName));
 		context.sendEvent(userID, "OnVehicleChanged", eventRequest);
 	}
 
-	private void sendAvailableVehiclesChangedEvent(Context context, int userID, String name) {
+	private void sendAvailableVehiclesChangedEvent(Context context, String userID, String name) {
 		// TODO: Don't serialize whole ship list, only delta
 		VehicleValues[] vehicles = database.getVehicles(userID, name);
 		Request eventRequest = new Request(Serialization.serialize(vehicles));

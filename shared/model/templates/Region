@@ -1,0 +1,50 @@
+{
+  "name": "Region",
+  "parent": null,
+  "variables": [
+    {
+      "name": "status",
+      "type": {
+        "enumType": "RegionStatus",
+        "type": "ENUM"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "host",
+      "type": {
+        "componentType": "Host",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "data",
+      "type": {
+        "componentType": "RegionValues",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "queue",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "SET"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "users",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "SET"
+      },
+      "ctorArg": false
+    }
+  ]
+}

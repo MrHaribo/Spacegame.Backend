@@ -17,7 +17,7 @@ public class AvatarDatabase extends Database {
 		super("avatar_db", "avatar_service", "avatar1234");
 	}
 
-	public void addAvatar(int userID, AvatarValues avatar) {
+	public void addAvatar(String userID, AvatarValues avatar) {
 		try {
 			PGobject dataObject = new PGobject();
 			dataObject.setType("json");
@@ -25,7 +25,7 @@ public class AvatarDatabase extends Database {
 
 			String sql = "INSERT INTO avatars VALUES (?, ?, ?);";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, avatar.getName());
 			stmt.setObject(3, dataObject);
 			stmt.execute();
@@ -35,7 +35,7 @@ public class AvatarDatabase extends Database {
 		}
 	}
 
-	public void updateAvatar(int userID, String name, Function<AvatarValues, AvatarValues> updateFunction) {
+	public void updateAvatar(String userID, String name, Function<AvatarValues, AvatarValues> updateFunction) {
 
 		PreparedStatement readAvatar = null;
 		PreparedStatement writeAvatar = null;
@@ -47,7 +47,7 @@ public class AvatarDatabase extends Database {
 			getConnection().setAutoCommit(false);
 
 			readAvatar = getConnection().prepareStatement(readSql);
-			readAvatar.setInt(1, userID);
+			readAvatar.setString(1, userID);
 			readAvatar.setString(2, name);
 			ResultSet result = readAvatar.executeQuery();
 			if (result.next()) {
@@ -62,7 +62,7 @@ public class AvatarDatabase extends Database {
 
 				writeAvatar = getConnection().prepareStatement(writeSql);
 				writeAvatar.setObject(1, dataObject);
-				writeAvatar.setInt(2, userID);
+				writeAvatar.setString(2, userID);
 				writeAvatar.setString(3, name);
 				writeAvatar.execute();
 
@@ -95,11 +95,11 @@ public class AvatarDatabase extends Database {
 		}
 	}
 
-	public AvatarValues getAvatar(int userID, String name) {
+	public AvatarValues getAvatar(String userID, String name) {
 		try {
 			String sql = "SELECT data FROM avatars WHERE user_id = ? AND name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
@@ -112,11 +112,11 @@ public class AvatarDatabase extends Database {
 		return null;
 	}
 
-	public void deleteAvatar(int userID, String name) {
+	public void deleteAvatar(String userID, String name) {
 		try {
 			String sql = "DELETE FROM avatars WHERE user_id = ? AND name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			stmt.execute();
 			stmt.close();
@@ -125,16 +125,16 @@ public class AvatarDatabase extends Database {
 		}
 	}
 
-	public AvatarValues[] getAvatars(int userID) {
+	public AvatarValues[] getAvatars(String userID) {
 		return getAvatarList(userID).toArray(new AvatarValues[0]);
 	}
 
-	public List<AvatarValues> getAvatarList(int userID) {
+	public List<AvatarValues> getAvatarList(String userID) {
 		List<AvatarValues> avatars = new ArrayList<>();
 		try {
 			String sql = "SELECT data FROM avatars WHERE user_id = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			ResultSet result = stmt.executeQuery();
 			while (result.next()) {
 				String data = result.getString(1);

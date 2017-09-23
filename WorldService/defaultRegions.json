@@ -1,0 +1,7 @@
+[
+	{"id":"Region.Central","name":"Central","worldPosition":{"x":-1.88,"y":1.8},"biomName":"Plain","seed":0.89407396,"threadLevel":0,"faction":"Confederate","pois":[]},
+	{"id":"Region.Sol","name":"Sol","worldPosition":{"x":6.0,"y":1.79},"biomName":"Plain","seed":0.95048165,"threadLevel":0,"faction":"Neutral","pois":[]},
+	{"id":"Region.Heulion","name":"Heulion","worldPosition":{"x":-5.38,"y":-2.86},"biomName":"Plain","seed":0.23177344,"threadLevel":0,"faction":"Rebel","pois":[]}
+]
+
+

@@ -31,14 +31,14 @@ public class ConnectionStore {
         bucket.bucketManager().createN1qlPrimaryIndex(true, false);
 	}
 	
-	public UserConnection get(String connectionID) {
+	public UserConnection getUserFromConnection(String connectionID) {
 		JsonDocument connectionDoc = bucket.getAndTouch(connectionID, connectionTimeout);
 		if (connectionDoc == null)
 			return null;
 		return Serialization.deserialize(connectionDoc.content().toString(), UserConnection.class);
 	}
 	
-	public UserConnection get(int userID) {
+	public UserConnection getConnectionFromUser(String userID) {
 
         N1qlQueryResult result = bucket.query(
             N1qlQuery.parameterized("SELECT connectionID, userID FROM user_connections WHERE userID=$1",
@@ -64,9 +64,9 @@ public class ConnectionStore {
         return connections;
 	}
 	
-	public UserConnection add(String connectionID, int userID) {
+	public UserConnection add(String connectionID, String userID) {
 
-		UserConnection connection = get(userID);
+		UserConnection connection = getConnectionFromUser(userID);
 		if (connection != null) {
 			System.out.println("Removing old connection: " + connection.getConnectionID());
 			remove(connection.getConnectionID());
@@ -85,7 +85,7 @@ public class ConnectionStore {
 		bucket.remove(connectionID);
 	}
 	
-	private UserConnection createConnection(String connectionID, int userID) {
+	private UserConnection createConnection(String connectionID, String userID) {
 		UserConnection connection = new UserConnection();
 		connection.setConnectionID(connectionID);
 		connection.setUserID(userID);

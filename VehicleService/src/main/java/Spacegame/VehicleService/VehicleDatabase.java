@@ -14,12 +14,12 @@ public class VehicleDatabase extends Database {
 		super("vehicle_db", "vehicle_service", "vehicle1234");
 	}
 
-	public void setCurrentVehicle(int userID, String name, int index) {
+	public void setCurrentVehicle(String userID, String name, int index) {
 		try {
 			String sql = "UPDATE vehicles SET current_vehicle_index = ? WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
 			stmt.setInt(1, index);
-			stmt.setInt(2, userID);
+			stmt.setString(2, userID);
 			stmt.setString(3, name);
 			stmt.execute();
 			stmt.close();
@@ -28,11 +28,11 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public int getCurrentVehicleIndex(int userID, String name) {
+	public int getCurrentVehicleIndex(String userID, String name) {
 		try {
 			String sql = "SELECT current_vehicle_index FROM vehicles WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
@@ -45,11 +45,11 @@ public class VehicleDatabase extends Database {
 		return -1;
 	}
 
-	public VehicleValues getCurrentVehicle(int userID, String name) {
+	public VehicleValues getCurrentVehicle(String userID, String name) {
 		try {
 			String sql = "SELECT current_vehicle_index FROM vehicles WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
@@ -62,11 +62,11 @@ public class VehicleDatabase extends Database {
 		return null;
 	}
 
-	public void createVehicleCollection(int userID, String name) {
+	public void createVehicleCollection(String userID, String name) {
 		try {
 			String sql = "INSERT INTO vehicles (user_id, avatar_name) VALUES (?,?)";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			stmt.execute();
 			stmt.close();
@@ -75,11 +75,11 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public void deleteVehicleCollection(int userID, String name) {
+	public void deleteVehicleCollection(String userID, String name) {
 		try {
 			String sql = "DELETE FROM vehicles WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			stmt.execute();
 			stmt.close();
@@ -88,7 +88,7 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public void addVehicle(int userID, String name, VehicleValues vehicle) {
+	public void addVehicle(String userID, String name, VehicleValues vehicle) {
 		try {
 			PGobject dataObject = new PGobject();
 			dataObject.setType("json");
@@ -97,7 +97,7 @@ public class VehicleDatabase extends Database {
 			String sql = "UPDATE vehicles SET data = array_append(data, ?) WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
 			stmt.setObject(1, dataObject);
-			stmt.setInt(2, userID);
+			stmt.setString(2, userID);
 			stmt.setString(3, name);
 			stmt.execute();
 			stmt.close();
@@ -106,12 +106,12 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public void deleteVehicle(int userID, String name, int vehicleIndex) {
+	public void deleteVehicle(String userID, String name, int vehicleIndex) {
 		try {
 			if (vehicleIndex == 0) {
 				String sql = "UPDATE vehicles SET data = data[2:2147483647] WHERE user_id = ? AND avatar_name = ?;";
 				PreparedStatement stmt = getConnection().prepareStatement(sql);
-				stmt.setInt(1, userID);
+				stmt.setString(1, userID);
 				stmt.setString(2, name);
 				stmt.execute();
 				stmt.close();
@@ -120,7 +120,7 @@ public class VehicleDatabase extends Database {
 				PreparedStatement stmt = getConnection().prepareStatement(sql);
 				stmt.setInt(1, vehicleIndex);
 				stmt.setInt(2, vehicleIndex + 2);
-				stmt.setInt(3, userID);
+				stmt.setString(3, userID);
 				stmt.setString(4, name);
 				stmt.execute();
 				stmt.close();
@@ -130,7 +130,7 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public void updateVehicle(int userID, String name, int index, VehicleValues vehicle) {
+	public void updateVehicle(String userID, String name, int index, VehicleValues vehicle) {
 		try {
 			PGobject dataObject = new PGobject();
 			dataObject.setType("json");
@@ -140,7 +140,7 @@ public class VehicleDatabase extends Database {
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
 			stmt.setInt(1, index + 1);
 			stmt.setObject(2, dataObject);
-			stmt.setInt(3, userID);
+			stmt.setString(3, userID);
 			stmt.setString(4, name);
 			stmt.execute();
 			stmt.close();
@@ -149,12 +149,12 @@ public class VehicleDatabase extends Database {
 		}
 	}
 
-	public VehicleValues getVehicle(int userID, String name, int index) {
+	public VehicleValues getVehicle(String userID, String name, int index) {
 		try {
 			String sql = "SELECT data[?] FROM vehicles WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
 			stmt.setInt(1, index + 1);
-			stmt.setInt(2, userID);
+			stmt.setString(2, userID);
 			stmt.setString(3, name);
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {
@@ -167,11 +167,11 @@ public class VehicleDatabase extends Database {
 		return null;
 	}
 
-	public VehicleValues[] getVehicles(int userID, String name) {
+	public VehicleValues[] getVehicles(String userID, String name) {
 		try {
 			String sql = "SELECT array_to_json(data) FROM vehicles WHERE user_id = ? AND avatar_name = ?;";
 			PreparedStatement stmt = getConnection().prepareStatement(sql);
-			stmt.setInt(1, userID);
+			stmt.setString(1, userID);
 			stmt.setString(2, name);
 			ResultSet result = stmt.executeQuery();
 			if (result.next()) {

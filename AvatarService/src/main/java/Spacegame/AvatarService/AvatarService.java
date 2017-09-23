@@ -20,32 +20,15 @@ public class AvatarService {
 	private AvatarDatabase database; 
 
 	// TODO: Avatars could be cached
-	private Map<Integer, String> avatars = new HashMap<>();
-	
-	public static void main(String[] args) {
-
-		Object invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("testScript");
-		System.out.println(invokeFunction);
-
-		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
-		System.out.println(invokeFunction);
-		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
-		System.out.println(invokeFunction);
-		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
-		System.out.println(invokeFunction);
-		invokeFunction = ScriptExecutor.INSTANCE.invokeFunction("myRnd");
-		System.out.println(invokeFunction);
-		
-	}
+	private Map<String, String> avatars = new HashMap<>();
 	
 	@OnStart
 	public void onStart(Context context) {
 		database = new AvatarDatabase();
 		
-		context.getAdvisory().listen("User.Disconnected", (String advisory) -> {
-			int userID = Integer.parseInt(advisory);
+		context.getAdvisory().listen("User.Disconnected", (String userID) -> {
 			avatars.remove(userID);
-			System.out.println("User Disconnected" + advisory + " player left: " + avatars.size());
+			System.out.println("User Disconnected" + userID + " player left: " + avatars.size());
 		});
 	}
 	
@@ -56,14 +39,14 @@ public class AvatarService {
 	
 	@MessageListener(uri="/credits/balance")
 	public Response balanceCredits(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 		return new Response(StatusCode.OK, Integer.toString(avatar.getCredits()));
 	}
 	
 	@MessageListener(uri="/credits/add")
 	public Response addCredits(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 		int amount = Integer.parseInt(request.getData());
 		int balance = avatar.getCredits() + amount;
@@ -80,7 +63,7 @@ public class AvatarService {
 	
 	@MessageListener(uri="/credits/remove")
 	public Response removeCredits(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
 		int amount = Integer.parseInt(request.getData());
@@ -99,7 +82,7 @@ public class AvatarService {
 
 	@MessageListener(uri="/reputation/add")
 	public void addReputation(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String attitude = request.getParameters().getString(ParameterCode.FACTION);
 		float amount = Float.parseFloat(request.getData());
 
@@ -120,7 +103,7 @@ public class AvatarService {
 	
 	@MessageListener(uri="/land")
 	public Response land(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
 		if (avatar.getLanded())
@@ -148,7 +131,7 @@ public class AvatarService {
 
 	@MessageListener(uri="/takeoff")
 	public Response takeoff(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
 		if (!avatar.getLanded())
@@ -174,21 +157,21 @@ public class AvatarService {
 
 	@MessageListener(uri="/current/name/get")
 	public Response getCurrentAvatarName(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String avatarName = avatars.get(userID);
 		return new Response(StatusCode.OK, avatarName);
 	}
 	
 	@MessageListener(uri="/current/get")
 	public Response getCurrentAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
 	}
 
 	@MessageListener(uri="/current/set")
 	public Response setCurrentAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = database.getAvatar(userID, request.getData());
 		avatars.put(userID, avatar.getName());
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
@@ -196,14 +179,14 @@ public class AvatarService {
 
 	@MessageListener(uri="/get")
 	public Response setAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = database.getAvatar(userID, request.getData());
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
 	}
 	
 	@MessageListener(uri="/all")
 	public Response getAllAvatars(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues[] avatars = database.getAvatars(userID);
 		if (avatars == null)
 			avatars = new AvatarValues[0];
@@ -213,7 +196,7 @@ public class AvatarService {
 
 	@MessageListener(uri="/create")
 	public Response createAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		AvatarValues avatar = Serialization.deserialize(request.getData(), AvatarValues.class);
 
 		if (avatar.getName() == null || avatar.getName().length() < 2)
@@ -248,7 +231,7 @@ public class AvatarService {
 	
 	@MessageListener(uri="/delete")
 	public Response deleteAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		database.deleteAvatar(userID, request.getData());
 		sendAvailableAvatarsChangedEvent(context, userID);
 		context.sendRequest("mn://vehicle/collection/remove", request);
@@ -258,7 +241,7 @@ public class AvatarService {
 
 	@MessageListener(uri="/current/update")
 	public void updateAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 
 		if (!avatars.containsKey(userID))
 			return;
@@ -275,7 +258,7 @@ public class AvatarService {
 	
 	@MessageListener(uri="/persist")
 	public void persistAvatar(Context context, Request request) {
-		int userID = request.getParameters().getInt(ParameterCode.USER_ID);
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String avatarName = request.getParameters().getString(ParameterCode.NAME);
 
 		database.updateAvatar(userID, avatarName, (AvatarValues avatar) -> {
@@ -287,18 +270,18 @@ public class AvatarService {
 		});
 	}
 	
-	private AvatarValues getCurrentAvatar(int userID) {
+	private AvatarValues getCurrentAvatar(String userID) {
 		String avatarName = avatars.get(userID);
 		return database.getAvatar(userID, avatarName);
 	}
 
-	private void sendAvailableAvatarsChangedEvent(Context context, int userID) {
+	private void sendAvailableAvatarsChangedEvent(Context context, String userID) {
 		AvatarValues[] avatars = database.getAvatars(userID);
 		String data = Serialization.serialize(avatars);
 		context.sendEvent(userID, "OnAvailableAvatarsChanged", data);
 	}
 	
-	private void sendReputationChangedEvent(Context context, int userID, String avatarName) {
+	private void sendReputationChangedEvent(Context context, String userID, String avatarName) {
 		AvatarValues avatar = database.getAvatar(userID, avatarName);
 		String data = Serialization.serialize(avatar.getFaction());
 		context.sendEvent(userID, "OnReputationChanged", data);

@@ -1,18 +1,19 @@
 {
-  "name": "UserConnection",
+  "name": "Host",
   "parent": null,
   "variables": [
     {
-      "name": "connectionID",
+      "name": "ip",
       "type": {
         "type": "STRING"
       },
       "ctorArg": false
     },
     {
-      "name": "userID",
+      "name": "port",
       "type": {
-        "type": "STRING"
+        "numberType": "INT",
+        "type": "NUMBER"
       },
       "ctorArg": false
     }

@@ -1,0 +1,8 @@
+{
+  "name": "RegionStatus",
+  "variables": [
+    "CLOSED",
+    "OPENING",
+    "OPEN"
+  ]
+}

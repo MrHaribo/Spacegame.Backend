@@ -22,6 +22,7 @@
     <module>Account\AccountService</module>
     <module>FullDB</module>
     <module>FooService</module>
+    <module>mn-jst</module>
   </modules>
 
 	<properties>

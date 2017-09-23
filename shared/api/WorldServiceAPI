@@ -4,7 +4,7 @@
   "description": "",
   "listeners": [
     {
-      "listenerUri": "/travel/home",
+      "listenerUri": "/region/all",
       "description": ""
     },
     {
@@ -12,15 +12,11 @@
       "description": ""
     },
     {
-      "listenerUri": "/instance/open",
+      "listenerUri": "/leave",
       "description": ""
     },
     {
-      "listenerUri": "/instance/close",
-      "description": ""
-    },
-    {
-      "listenerUri": "/travel",
+      "listenerUri": "/region/ready",
       "description": ""
     }
   ]
