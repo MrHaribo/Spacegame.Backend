@@ -1,5 +1,9 @@
 package Spacegame.VehicleService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,6 +11,7 @@ import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
 import micronet.annotation.OnStop;
+import micronet.datastore.DataStore;
 import micronet.network.Context;
 import micronet.network.Request;
 import micronet.network.Response;
@@ -16,16 +21,28 @@ import micronet.serialization.Serialization;
 @MessageService(uri="mn://vehicle")
 public class VehicleService {
 	private VehicleDatabase database;
+	private DataStore store = new DataStore();
 
-	private Map<String, VehicleValues> defaultVehicles;
+	private Map<String, VehicleValues> vehicleConfigurations = new HashMap<>();
+	private Map<String, VehicleValues> defaultVehicles = new HashMap<>();
 
 	@OnStart
 	public void onStart(Context context) {
 		database = new VehicleDatabase();
-		defaultVehicles = new HashMap<>();
-		defaultVehicles.put("Rebel", database.loadVehicleConfiguration("Mice"));
-		defaultVehicles.put("Confederate", database.loadVehicleConfiguration("Beetle"));
-		defaultVehicles.put("Neutral", database.loadVehicleConfiguration("Drone"));
+		
+		for (File cfgFile : new File("vehicle_configurations").listFiles()) {
+			try {
+				String data = new String(Files.readAllBytes(cfgFile.toPath()));
+				VehicleValues vehicle = Serialization.deserialize(data, VehicleValues.class);
+				vehicleConfigurations.put(vehicle.getName(), vehicle);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+				
+		defaultVehicles.put("Rebel", vehicleConfigurations.get("Mice"));
+		defaultVehicles.put("Confederate", vehicleConfigurations.get("Beetle"));
+		defaultVehicles.put("Neutral", vehicleConfigurations.get("Drone"));
 	}
 
 	@OnStop
@@ -36,7 +53,17 @@ public class VehicleService {
 	@MessageListener(uri = "/configuration/all/upload")
 	public Response uploadAllConfigurations(Context context, Request request) {
 		VehicleValues[] vehicles = Serialization.deserialize(request.getData(), VehicleValues[].class);
-		database.saveVehicleConfigurations(vehicles);
+		//database.saveVehicleConfigurations(vehicles);
+		
+		for (VehicleValues vehicle : vehicles) {
+			try {
+				String data = Serialization.serializePretty(vehicle);
+				Files.write(new File("vehicle_configurations/" + vehicle.getName()).toPath(), data.getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		return new Response(StatusCode.OK);
 	}
 
@@ -49,7 +76,9 @@ public class VehicleService {
 		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Must be landed to change Ship");
 
-		database.setCurrentVehicle(userID, avatar.getName(), Integer.parseInt(request.getData()));
+		int vehicleIndex = Integer.parseInt(request.getData());
+		String vehicleCollectionID = String.format("Player.%s.vehicles", userID);
+		store.getSub(vehicleCollectionID).getMap("currentVehicles").add(avatar.getName(), vehicleIndex);
 		sendVehicleChangedEvent(context, userID, avatar.getName());
 		return new Response(StatusCode.OK);
 	}
@@ -60,15 +89,17 @@ public class VehicleService {
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
 
+		String playerID = String.format("Player.%s", userID);
 		int vehicleIndex = Integer.parseInt(request.getData());
-		int currentVehicleIndex = database.getCurrentVehicleIndex(userID, avatarName);
+		int currentVehicleIndex = store.getSub(playerID).getMap("vehicles.currentVehicles").get(avatarName, Integer.class);
 		if (currentVehicleIndex == vehicleIndex)
 			return new Response(StatusCode.FORBIDDEN, "Cannot Sell Ship in use");
 
-		database.deleteVehicle(userID, avatarName, vehicleIndex);
+		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
+		store.getSub(playerID).getList(vehicleListID).remove(vehicleIndex);
 
 		if (vehicleIndex < currentVehicleIndex)
-			database.setCurrentVehicle(userID, avatarName, currentVehicleIndex - 1);
+			store.getSub(playerID).getMap("vehicles.currentVehicles").add(avatarName, currentVehicleIndex - 1);
 
 		// TODO: Sell Item via ShopService
 
@@ -79,9 +110,12 @@ public class VehicleService {
 	@MessageListener(uri = "/current")
 	public Response getCurrentVehicle(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
+		String playerID = String.format("Player.%s", userID);
+		String avatarName = context.sendRequestBlocking("mn://avatar/current/name/get", request).getData();
 
-		VehicleValues vehicle = database.getCurrentVehicle(userID, avatarQuery.getData());
+		int currentVehicleIndex = store.getSub(playerID).getMap("vehicles.currentVehicles").get(avatarName, Integer.class);
+		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
+		VehicleValues vehicle = store.getSub(playerID).getList(vehicleListID).get(currentVehicleIndex, VehicleValues.class);
 		if (vehicle == null)
 			return new Response(StatusCode.FORBIDDEN, "You have no Ship");
 
@@ -94,8 +128,11 @@ public class VehicleService {
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
 		ItemValues vehicleItem = Serialization.deserialize(request.getData(), ItemValues.class);
-		VehicleValues vehicle = database.loadVehicleConfiguration(vehicleItem.getName());
-		database.addVehicle(userID, avatarName, vehicle);
+		VehicleValues vehicle = vehicleConfigurations.get(vehicleItem.getName());
+		
+		String playerID = String.format("Player.%s", userID);
+		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
+		store.getSub(playerID).getList(vehicleListID).append(vehicle);
 
 		sendAvailableVehiclesChangedEvent(context, userID, avatarName);
 		return new Response(StatusCode.OK);
@@ -106,7 +143,10 @@ public class VehicleService {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/name/get", request);
 		String avatarName = avatarQuery.getData();
-		VehicleValues[] vehicles = database.getVehicles(userID, avatarName);
+		
+		String playerID = String.format("Player.%s", userID);
+		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
+		VehicleValues[] vehicles = store.getSub(playerID).get(vehicleListID, VehicleValues[].class);
 		
 		String data = Serialization.serialize(vehicles);
 		Response response = new Response(StatusCode.OK, data);
@@ -115,19 +155,27 @@ public class VehicleService {
 	}
 
 	@MessageListener(uri = "/collection/remove")
-	public Response deleteVehicleCollection(Context context, Request request) {
+	public void deleteVehicleCollection(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		database.deleteVehicleCollection(userID, request.getData());
-		return new Response(StatusCode.OK);
+		String avatarName = request.getData();
+		
+		String playerID = String.format("Player.%s", userID);
+		store.getSub(playerID).getMap("vehicles.vehicles").remove(avatarName);
+		store.getSub(playerID).getMap("vehicles.currentVehicles").remove(avatarName);
 	}
 
 	@MessageListener(uri = "/collection/create")
-	public Response createVehicleCollection(Context context, Request request) {
+	public void createVehicleCollection(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String faction = request.getParameters().getString(ParameterCode.FACTION);
-		database.createVehicleCollection(userID, request.getData());
-		database.addVehicle(userID, request.getData(), defaultVehicles.get(faction));
-		return new Response(StatusCode.OK);
+		String avatarName = request.getData();
+		
+		String playerID = String.format("Player.%s", userID);
+		VehicleCollection collection = store.getSub(playerID).get("vehicles", VehicleCollection.class);
+		
+		collection.getVehicles().put(avatarName, Arrays.asList(defaultVehicles.get(faction)));
+		collection.getCurrentVehicles().put(avatarName, 0);
+		store.getSub(playerID).set("vehicles", collection);
 	}
 
 	@MessageListener(uri = "/weapon/equip")

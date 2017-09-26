@@ -1,0 +1,7 @@
+{
+  "name": "Drone",
+  "primaryWeapons": [
+    "LaserBlaster"
+  ],
+  "heavyWeapons": []
+}

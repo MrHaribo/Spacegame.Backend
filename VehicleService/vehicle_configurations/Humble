@@ -1,0 +1,14 @@
+{
+  "name": "Humble",
+  "primaryWeapons": [
+    "LaserBlaster",
+    "LaserBlaster",
+    "LaserBlaster",
+    "LaserBlaster",
+    "LaserBlaster",
+    "LaserBlaster"
+  ],
+  "heavyWeapons": [
+    "RocketLauncher"
+  ]
+}

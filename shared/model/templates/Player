@@ -1,0 +1,42 @@
+{
+  "name": "Player",
+  "parent": null,
+  "variables": [
+    {
+      "name": "userID",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": true
+    },
+    {
+      "name": "avatars",
+      "type": {
+        "keyType": {
+          "type": "STRING"
+        },
+        "entryType": {
+          "componentType": "AvatarValues",
+          "type": "COMPONENT"
+        },
+        "type": "MAP"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "currentAvatar",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "vehicles",
+      "type": {
+        "componentType": "VehicleCollection",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
+    }
+  ]
+}

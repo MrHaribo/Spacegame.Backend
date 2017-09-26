@@ -1,6 +1,8 @@
 {
   "name": "Event",
   "variables": [
-    "RegionReady"
+    "RegionReady",
+    "AvailableAvatarsChanged",
+    "ReputationChanged"
   ]
 }

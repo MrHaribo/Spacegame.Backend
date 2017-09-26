@@ -1,0 +1,8 @@
+{
+  "name": "Scout",
+  "primaryWeapons": [
+    "LaserBlaster",
+    "LaserBlaster"
+  ],
+  "heavyWeapons": []
+}

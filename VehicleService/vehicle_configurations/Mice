@@ -1,0 +1,8 @@
+{
+  "name": "Mice",
+  "primaryWeapons": [
+    "LaserBlaster",
+    "LaserBlaster"
+  ],
+  "heavyWeapons": []
+}

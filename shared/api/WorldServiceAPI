@@ -8,6 +8,10 @@
       "description": ""
     },
     {
+      "listenerUri": "/region/current/get",
+      "description": ""
+    },
+    {
       "listenerUri": "/join",
       "description": ""
     },

@@ -62,9 +62,14 @@ public class WorldService {
 	@MessageListener(uri = "/join")
 	public Response joinWorld(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		String regionID = request.getData();
 		
-		Region region = store.get(regionID, Region.class);
+		String regionID = request.getData();
+		Region region = null;
+		if (regionID == null) {
+			region = getCurrentRegion(userID);
+		} else {
+			region = store.get(regionID, Region.class);
+		}
 		
 		if (region == null)
 			return new Response(StatusCode.NOT_FOUND);
@@ -74,20 +79,31 @@ public class WorldService {
 		
 		switch (region.getStatus()) {
 		case OPEN:
-			store.getSub(regionID).getList("users").append(userID);
+			store.getSub(region.getData().getId()).getList("users").append(userID);
 			return new Response(StatusCode.OK, Serialization.serialize(region.getHost()));
 		case CLOSED:
 			//TODO: Timeout if User does not create Map
-			store.getSub(regionID).set("status", RegionStatus.OPENING);
-			store.getSub(regionID).getList("queue").append(userID);
-			return new Response(StatusCode.ACCEPTED, Serialization.serialize(region.getData()));
+			store.getSub(region.getData().getId()).set("status", RegionStatus.OPENING);
+			store.getSub(region.getData().getId()).getList("queue").append(userID);
+			return new Response(StatusCode.ACCEPTED);
 		case OPENING:
-			region.getQueue().add(userID);
-			store.getSub(regionID).set("queue", region.getQueue());
+			region.getQueue().add(region.getData().getId());
+			store.getSub(region.getData().getId()).set("queue", region.getQueue());
 			return new Response(StatusCode.TEMPORARY_REDIRECT);
 		default:
 			return new Response(StatusCode.NOT_IMPLEMENTED);
 		}
+	}
+	
+
+	
+	@MessageListener(uri = "/region/current/get")
+	public Response getCurrentRegion(Context context, Request request) {
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		Region region = getCurrentRegion(userID);
+		if (region == null)
+			return new Response(StatusCode.NOT_FOUND);
+		return new Response(StatusCode.OK, Serialization.serialize(region.getData()));
 	}
 	
 	@MessageListener(uri = "/leave")
@@ -147,6 +163,13 @@ public class WorldService {
 			region.setStatus(RegionStatus.CLOSED);
 		}
 		store.upsert(region.getData().getId(), region);
+	}
+	
+	private Region getCurrentRegion(String userID) {
+		String playerID = String.format("Player.%s", userID);
+		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
+		AvatarValues avatar = store.getSub(playerID).getMap("avatars").get(avatarName, AvatarValues.class);
+		return store.get(avatar.getRegionID(), Region.class);
 	}
 	
 	private void removeUserFromQueue(String userID) {

@@ -1,0 +1,10 @@
+{
+  "name": "Eagle",
+  "primaryWeapons": [
+    "LaserBlaster",
+    "LaserBlaster"
+  ],
+  "heavyWeapons": [
+    "RocketLauncher"
+  ]
+}

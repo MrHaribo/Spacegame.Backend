@@ -1,0 +1,37 @@
+{
+  "name": "VehicleCollection",
+  "parent": null,
+  "variables": [
+    {
+      "name": "currentVehicles",
+      "type": {
+        "keyType": {
+          "type": "STRING"
+        },
+        "entryType": {
+          "numberType": "INT",
+          "type": "NUMBER"
+        },
+        "type": "MAP"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "vehicles",
+      "type": {
+        "keyType": {
+          "type": "STRING"
+        },
+        "entryType": {
+          "entryType": {
+            "componentType": "VehicleValues",
+            "type": "COMPONENT"
+          },
+          "type": "LIST"
+        },
+        "type": "MAP"
+      },
+      "ctorArg": false
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package Spacegame.GatewayService;
 
 import java.net.URI;
+import java.util.HashMap;
 
 import micronet.activemq.AMQGatewayPeer;
 import micronet.annotation.MessageListener;
@@ -9,6 +10,7 @@ import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
 import micronet.annotation.OnStop;
 import micronet.annotation.RequestParameters;
+import micronet.datastore.DataStore;
 import micronet.network.Context;
 import micronet.network.NetworkConstants;
 import micronet.network.Request;
@@ -21,6 +23,8 @@ public class GatewayService {
 	private AMQGatewayPeer gatewayPeer;
 	
 	private ConnectionStore connections = new ConnectionStore();
+	
+	private DataStore store = new DataStore();
 
 	@OnStart
 	public void onStart(Context context) {
@@ -75,7 +79,7 @@ public class GatewayService {
 		UserConnection connection = connections.getUserFromConnection(connectionID);
 
 		switch (userRequest) {
-		case "mn://login/":
+		case "mn://login":
 			if (connection != null)
 				return new Response(StatusCode.FORBIDDEN, "Already logged in");
 			String userID = request.getData();
@@ -84,8 +88,16 @@ public class GatewayService {
 				connections.remove(connection.getConnectionID());
 				//return new Response(StatusCode.FORBIDDEN, "User ID already in use");
 			connection = connections.add(connectionID, userID);
+			
+			String playerID = String.format("Player.%s", userID);
+			Player player = store.get(playerID, Player.class);
+			if (player == null) {
+				player = createPlayer(userID);
+				store.insert(playerID, player);
+			}
+			
 			return new Response(StatusCode.OK);
-		case "mn://logout/":
+		case "mn://logout":
 			if (connection == null)
 				return new Response(StatusCode.FORBIDDEN, "You are not logged in");
 			connections.remove(connectionID);
@@ -99,5 +111,16 @@ public class GatewayService {
 			request.getParameters().set(ParameterCode.USER_ID, connection.getUserID());
 			return context.sendRequestBlocking(userRequest, request);
 		}
+	}
+
+	private Player createPlayer(String userID) {
+		Player player;
+		player = new Player(userID);
+		player.setAvatars(new HashMap<>());
+
+		player.setVehicles(new VehicleCollection());
+		player.getVehicles().setVehicles(new HashMap<>());
+		player.getVehicles().setCurrentVehicles(new HashMap<>());
+		return player;
 	}
 }

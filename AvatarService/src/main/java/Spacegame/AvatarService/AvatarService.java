@@ -3,20 +3,26 @@ package Spacegame.AvatarService;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.couchbase.client.java.document.json.JsonObject;
+
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
 import micronet.annotation.OnStop;
+import micronet.datastore.DataStore;
 import micronet.network.Context;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
 import micronet.script.ScriptExecutor;
 import micronet.serialization.Serialization;
+import micronet.type.Vector2;
 
 @MessageService(uri="mn://avatar")  
 public class AvatarService {
 
+	private DataStore store = new DataStore();
+	
 	private AvatarDatabase database; 
 
 	// TODO: Avatars could be cached
@@ -80,26 +86,26 @@ public class AvatarService {
 		}
 	}
 
-	@MessageListener(uri="/reputation/add")
-	public void addReputation(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		String attitude = request.getParameters().getString(ParameterCode.FACTION);
-		float amount = Float.parseFloat(request.getData());
-
-		if (!avatars.containsKey(userID))
-			return;
-		String avatarName = avatars.get(userID);
-
-		database.updateAvatar(userID, avatarName, (AvatarValues tmp) -> {
-			if (attitude.equals(FactionValues.AttitudeConfederate))
-				tmp.getFaction().setConfederateReputation(tmp.getFaction().getConfederateReputation() + amount);
-			if (attitude.equals(FactionValues.AttitudeRebel))
-				tmp.getFaction().setRebelReputation(tmp.getFaction().getRebelReputation() + amount);
-			return tmp;
-		});
-		
-		sendReputationChangedEvent(context, userID, avatarName);
-	}
+//	@MessageListener(uri="/reputation/add")
+//	public void addReputation(Context context, Request request) {
+//		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+//		String attitude = request.getParameters().getString(ParameterCode.FACTION);
+//		float amount = Float.parseFloat(request.getData());
+//
+//		if (!avatars.containsKey(userID))
+//			return;
+//		String avatarName = avatars.get(userID);
+//
+//		database.updateAvatar(userID, avatarName, (AvatarValues tmp) -> {
+//			if (attitude.equals(FactionValues.AttitudeConfederate))
+//				tmp.getFaction().setConfederateReputation(tmp.getFaction().getConfederateReputation() + amount);
+//			if (attitude.equals(FactionValues.AttitudeRebel))
+//				tmp.getFaction().setRebelReputation(tmp.getFaction().getRebelReputation() + amount);
+//			return tmp;
+//		});
+//		
+//		sendReputationChangedEvent(context, userID, avatarName);
+//	}
 	
 	@MessageListener(uri="/land")
 	public Response land(Context context, Request request) {
@@ -157,46 +163,70 @@ public class AvatarService {
 
 	@MessageListener(uri="/current/name/get")
 	public Response getCurrentAvatarName(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		String avatarName = avatars.get(userID);
-		return new Response(StatusCode.OK, avatarName);
+		String playerID = getPlayerID(request);
+		AvatarValues avatar = getCurrentAvatar(playerID);
+		if (avatar == null)
+			return new Response(StatusCode.GONE);
+		return new Response(StatusCode.OK, avatar.getName());
 	}
 	
 	@MessageListener(uri="/current/get")
 	public Response getCurrentAvatar(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		String playerID = getPlayerID(request);
+		AvatarValues avatar = getCurrentAvatar(playerID);
+		if (avatar == null)
+			return new Response(StatusCode.GONE);
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
 	}
 
 	@MessageListener(uri="/current/set")
 	public Response setCurrentAvatar(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = database.getAvatar(userID, request.getData());
-		avatars.put(userID, avatar.getName());
+		String playerID = getPlayerID(request);
+		
+		Player player = store.get(playerID, Player.class);
+		player.setCurrentAvatar(request.getData());
+		store.upsert(playerID, player);
+		
+		AvatarValues avatar = getCurrentAvatar(playerID);
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
+	}
+	
+	@MessageListener(uri="/current/update")
+	public void updateAvatar(Context context, Request request) {
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = getPlayerID(request);
+
+		AvatarValues avatar = getCurrentAvatar(playerID);
+		if (avatar == null)
+			return;
+		persistAvatar(request, userID, avatar.getName());
 	}
 
 	@MessageListener(uri="/get")
 	public Response setAvatar(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = database.getAvatar(userID, request.getData());
+		String playerID = getPlayerID(request);
+		
+		AvatarValues avatar = store.getSub(playerID).getMap("avatars").get(request.getData(), AvatarValues.class);
+		if (avatar == null)
+			return new Response(StatusCode.NOT_FOUND);
+		
 		return new Response(StatusCode.OK, Serialization.serialize(avatar));
 	}
 	
 	@MessageListener(uri="/all")
 	public Response getAllAvatars(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues[] avatars = database.getAvatars(userID);
-		if (avatars == null)
-			avatars = new AvatarValues[0];
-		String data = Serialization.serialize(avatars);
-		return new Response(StatusCode.OK, data);
+		String playerID = String.format("Player.%s", userID);
+		
+		Player player = store.get(playerID, Player.class);
+		return new Response(StatusCode.OK, Serialization.serialize(player.getAvatars()));
 	}
 
 	@MessageListener(uri="/create")
 	public Response createAvatar(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = String.format("Player.%s", userID);
+		
 		AvatarValues avatar = Serialization.deserialize(request.getData(), AvatarValues.class);
 
 		if (avatar.getName() == null || avatar.getName().length() < 2)
@@ -205,85 +235,91 @@ public class AvatarService {
 
 		String faction = request.getParameters().getString(ParameterCode.FACTION);
 		if (faction.equals(FactionValues.AttitudeRebel)) {
-			avatar.setFaction(new FactionValues(-0.3f, 0.4f));
-			avatar.setRegionID("Region.32");
-			avatar.setHomeRegionID("Region.32");
+			avatar.setFaction(FactionValues.AttitudeRebel);
+			avatar.setRegionID("Region.Heulion");
+			avatar.setHomeRegionID("Region.Heulion");
 		} else if (faction.equals(FactionValues.AttitudeConfederate)) {
-			avatar.setFaction(new FactionValues(0.4f, -0.3f));
-			avatar.setRegionID("Region.33");
-			avatar.setHomeRegionID("Region.33");
+			avatar.setFaction(FactionValues.AttitudeConfederate);
+			avatar.setRegionID("Region.Central");
+			avatar.setHomeRegionID("Region.Central");
 		} else if (faction.equals(FactionValues.AttitudeNeutral)) {
-			avatar.setFaction(new FactionValues(0, 0));
-			avatar.setRegionID("Region.1");
-			avatar.setHomeRegionID("Region.1");
+			avatar.setFaction(FactionValues.AttitudeNeutral);
+			avatar.setRegionID("Region.Sol");
+			avatar.setHomeRegionID("Region.Sol");
 		}
 
-		database.addAvatar(userID, avatar);
-		sendAvailableAvatarsChangedEvent(context, userID);
+		store.getSub(playerID).getMap("avatars").add(avatar.getName(), avatar);
 
 		Request createCollectionRequest = new Request(avatar.getName());
 		createCollectionRequest.getParameters().set(ParameterCode.USER_ID, userID);
 		createCollectionRequest.getParameters().set(ParameterCode.FACTION, faction);
 		context.sendRequest("mn://vehicle/collection/create", createCollectionRequest);
 
+		sendAvailableAvatarsChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
 	}
 	
 	@MessageListener(uri="/delete")
 	public Response deleteAvatar(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		database.deleteAvatar(userID, request.getData());
-		sendAvailableAvatarsChangedEvent(context, userID);
+		String playerID = String.format("Player.%s", userID);
+		
+		store.getSub(playerID).getMap("avatars").remove(request.getData());
 		context.sendRequest("mn://vehicle/collection/remove", request);
 
+		sendAvailableAvatarsChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
-	}
-
-	@MessageListener(uri="/current/update")
-	public void updateAvatar(Context context, Request request) {
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-
-		if (!avatars.containsKey(userID))
-			return;
-		String avatarName = avatars.get(userID);
-
-		database.updateAvatar(userID, avatarName, (AvatarValues avatar) -> {
-			if (request.getParameters().containsParameter(ParameterCode.REGION_ID))
-				avatar.setRegionID(request.getParameters().getString(ParameterCode.REGION_ID));
-			if (request.getParameters().containsParameter(ParameterCode.POSITION))
-				avatar.setPosition(request.getParameters().getVector2(ParameterCode.POSITION));
-			return avatar;
-		});
 	}
 	
 	@MessageListener(uri="/persist")
 	public void persistAvatar(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String avatarName = request.getParameters().getString(ParameterCode.NAME);
+		persistAvatar(request, userID, avatarName);
+	}
 
-		database.updateAvatar(userID, avatarName, (AvatarValues avatar) -> {
-			if (request.getParameters().containsParameter(ParameterCode.REGION_ID))
-				avatar.setRegionID(request.getParameters().getString(ParameterCode.REGION_ID));
-			if (request.getParameters().containsParameter(ParameterCode.POSITION))
-				avatar.setPosition(request.getParameters().getVector2(ParameterCode.POSITION));
-			return avatar;
-		});
+	private void persistAvatar(Request request, String userID, String avatarName) {
+		String playerID = String.format("Player.%s", userID);
+
+		if (request.getParameters().containsParameter(ParameterCode.REGION_ID)) {
+			String regionID = request.getParameters().getString(ParameterCode.REGION_ID);
+			store.getSub(playerID).set(String.format("avatars.%s.regionID", avatarName), regionID);
+			
+		}
+		if (request.getParameters().containsParameter(ParameterCode.POSITION)) {
+			Vector2 position = request.getParameters().getVector2(ParameterCode.POSITION);
+			store.getSub(playerID).set(String.format("avatars.%s.position", avatarName), position);
+		}
 	}
 	
-	private AvatarValues getCurrentAvatar(String userID) {
-		String avatarName = avatars.get(userID);
-		return database.getAvatar(userID, avatarName);
+	private String getPlayerID(Request request) {
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		if (request.getParameters().containsParameter(ParameterCode.ID)) {
+			userID = request.getParameters().getString(ParameterCode.ID);
+		}
+		return String.format("Player.%s", userID);
+	}
+	
+	private AvatarValues getCurrentAvatar(String playerID) {
+		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
+		if (avatarName == null)
+			return null;
+
+		AvatarValues avatar = store.getSub(playerID).getMap("avatars").get(avatarName, AvatarValues.class);
+		return avatar;
 	}
 
 	private void sendAvailableAvatarsChangedEvent(Context context, String userID) {
-		AvatarValues[] avatars = database.getAvatars(userID);
-		String data = Serialization.serialize(avatars);
-		context.sendEvent(userID, "OnAvailableAvatarsChanged", data);
+		String playerID = String.format("Player.%s", userID);
+		Player player = store.get(playerID, Player.class);
+		
+		String data = Serialization.serialize(player.getAvatars());
+		context.sendEvent(userID, Event.AvailableAvatarsChanged, data);
 	}
 	
-	private void sendReputationChangedEvent(Context context, String userID, String avatarName) {
-		AvatarValues avatar = database.getAvatar(userID, avatarName);
-		String data = Serialization.serialize(avatar.getFaction());
-		context.sendEvent(userID, "OnReputationChanged", data);
-	}
+//	private void sendReputationChangedEvent(Context context, String userID, String avatarName) {
+//		AvatarValues avatar = database.getAvatar(userID, avatarName);
+//		String data = Serialization.serialize(avatar.getFaction());
+//		context.sendEvent(userID, Event.ReputationChanged, data);
+//	}
 }

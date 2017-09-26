@@ -60,17 +60,17 @@ public class ShopService {
 		Response regionResponse = context.sendRequestBlocking("mn://region/get", regionRequest);
 		RegionValues region = Serialization.deserialize(regionResponse.getData(), RegionValues.class);
 		
-		if ((boolean)avatar.getFaction().isHostile(region.getFaction()))
-			return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: Hostile Planet");
-
-		int[] rankRestrictions = database.getRankRestrictions(region.getFaction());
-		int restriction = rankRestrictions[indices[0]];
-		if (restriction > 0) {
-			if (!avatar.getFaction().getName().equals(region.getFaction()))
-				return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: You have the wrong Faction");
-			if ((int)avatar.getFaction().getRank() < restriction)
-				return new Response(StatusCode.FORBIDDEN, "Insufficient Rank: Required " + restriction + " (Current " + avatar.getFaction().getRank() + ")");
-		}
+//		if ((boolean)avatar.getFaction().isHostile(region.getFaction()))
+//			return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: Hostile Planet");
+//
+//		int[] rankRestrictions = database.getRankRestrictions(region.getFaction());
+//		int restriction = rankRestrictions[indices[0]];
+//		if (restriction > 0) {
+//			if (!avatar.getFaction().getName().equals(region.getFaction()))
+//				return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: You have the wrong Faction");
+//			if ((int)avatar.getFaction().getRank() < restriction)
+//				return new Response(StatusCode.FORBIDDEN, "Insufficient Rank: Required " + restriction + " (Current " + avatar.getFaction().getRank() + ")");
+//		}
 		
 		ItemValues[] shopItems = database.getShop(region.getFaction());
 		ItemValues itemToBuy = shopItems[indices[0]];
