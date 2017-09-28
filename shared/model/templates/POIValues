@@ -12,7 +12,8 @@
     {
       "name": "type",
       "type": {
-        "type": "STRING"
+        "enumType": "POIType",
+        "type": "ENUM"
       },
       "ctorArg": false
     },

@@ -4,6 +4,10 @@
   "description": "",
   "listeners": [
     {
+      "listenerUri": "/region/battle/all",
+      "description": ""
+    },
+    {
       "listenerUri": "/region/all",
       "description": ""
     },
@@ -21,6 +25,10 @@
     },
     {
       "listenerUri": "/region/ready",
+      "description": ""
+    },
+    {
+      "listenerUri": "/region/current/set",
       "description": ""
     }
   ]

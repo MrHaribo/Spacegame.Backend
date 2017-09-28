@@ -16,12 +16,23 @@ import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
 import micronet.serialization.Serialization;
+import micronet.type.Vector2;
 
 @MessageService(uri="mn://world")
 public class WorldService {
 	
 	DataStore store;
 
+	public static void main(String[] args) {
+		POIValues poi = new POIValues();
+		poi.setId("Earth");
+		poi.setPosition(new Vector2());
+		poi.setSeed(42);
+		poi.setType(POIType.Planet);
+		
+		System.out.println(Serialization.serialize(poi));
+	}
+	
 	@OnStart
 	public void onStart(Context context) {
 		store = new DataStore();
@@ -106,6 +117,15 @@ public class WorldService {
 		return new Response(StatusCode.OK, Serialization.serialize(region.getData()));
 	}
 	
+	@MessageListener(uri = "/region/current/set")
+	public Response setCurrentRegion(Context context, Request request) {
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = String.format("Player.%s", userID);
+		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
+		store.getSub(playerID).getMap("avatars").get(avatarName).set("regionID", request.getData());
+		return new Response(StatusCode.OK);
+	}
+	
 	@MessageListener(uri = "/leave")
 	public void leaveWorld(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
@@ -147,8 +167,18 @@ public class WorldService {
 	
 	@MessageListener(uri = "/region/all")
 	public Response getAllRegions(Context context, Request request) {
-		Object allRegions = store.getSub("World").get("regions", Object.class);
-		return new Response(StatusCode.OK, allRegions.toString());
+		String[] allRegionIDs = store.getSub("World").get("regions", String[].class);
+		List<RegionValues> allRegions = new ArrayList<>();
+		for (String regionID : allRegionIDs) {
+			RegionValues region = store.getSub(regionID).get("data", RegionValues.class);
+			allRegions.add(region);
+		}
+		return new Response(StatusCode.OK, Serialization.serialize(allRegions));
+	}
+	
+	@MessageListener(uri = "/region/battle/all")
+	public Response getAllBattleRegions(Context context, Request request) {
+		return new Response(StatusCode.OK, Serialization.serialize(new RegionValues[0]));
 	}
 	
 	private void removeUserFromRegion(String userID) {

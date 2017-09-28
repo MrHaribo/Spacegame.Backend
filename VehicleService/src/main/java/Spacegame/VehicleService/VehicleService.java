@@ -110,6 +110,9 @@ public class VehicleService {
 	@MessageListener(uri = "/current")
 	public Response getCurrentVehicle(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		if (request.getParameters().containsParameter(ParameterCode.ID)) {
+			userID = request.getParameters().getString(ParameterCode.ID);
+		}
 		String playerID = String.format("Player.%s", userID);
 		String avatarName = context.sendRequestBlocking("mn://avatar/current/name/get", request).getData();
 

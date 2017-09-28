@@ -25,15 +25,6 @@ couchbase-cli bucket-create -c $couchbase_address \
 	-u Administrator -p password
 	
 couchbase-cli bucket-create -c $couchbase_address \
-	--bucket=instance_connections \
-	--bucket-type=couchbase \
-	--bucket-ramsize=100 \
-	--bucket-replica=1 \
-	--bucket-priority=high \
-	--bucket-eviction-policy=valueOnly \
-	-u Administrator -p password
-	
-couchbase-cli bucket-create -c $couchbase_address \
 	--bucket=entities \
 	--bucket-type=couchbase \
 	--bucket-ramsize=300 \

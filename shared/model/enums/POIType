@@ -1,0 +1,7 @@
+{
+  "name": "POIType",
+  "variables": [
+    "Planet",
+    "Moon"
+  ]
+}
