@@ -280,7 +280,7 @@ public class VehicleService {
 		VehicleValues vehicle = database.getCurrentVehicle(userID, avatarName);
 		Request eventRequest = new Request(Serialization.serialize(vehicle));
 		eventRequest.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, avatarName));
-		context.sendEvent(userID, "OnVehicleChanged", eventRequest);
+		context.sendEvent(userID, Event.VehicleChanged, eventRequest);
 	}
 
 	private void sendAvailableVehiclesChangedEvent(Context context, String userID, String name) {
@@ -288,6 +288,6 @@ public class VehicleService {
 		VehicleValues[] vehicles = database.getVehicles(userID, name);
 		Request eventRequest = new Request(Serialization.serialize(vehicles));
 		eventRequest.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, name));
-		context.sendEvent(userID, "OnAvailableVehiclesChanged", eventRequest);
+		context.sendEvent(userID, Event.AvailableVehiclesChanged, eventRequest); 
 	}
 }

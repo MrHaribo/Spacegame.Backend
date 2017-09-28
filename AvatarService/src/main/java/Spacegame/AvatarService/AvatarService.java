@@ -3,18 +3,14 @@ package Spacegame.AvatarService;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.couchbase.client.java.document.json.JsonObject;
-
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
-import micronet.annotation.OnStop;
 import micronet.datastore.DataStore;
 import micronet.network.Context;
 import micronet.network.Request;
 import micronet.network.Response;
 import micronet.network.StatusCode;
-import micronet.script.ScriptExecutor;
 import micronet.serialization.Serialization;
 import micronet.type.Vector2;
 
@@ -22,64 +18,51 @@ import micronet.type.Vector2;
 public class AvatarService {
 
 	private DataStore store = new DataStore();
-	
-	private AvatarDatabase database; 
 
 	// TODO: Avatars could be cached
 	private Map<String, String> avatars = new HashMap<>();
 	
 	@OnStart
 	public void onStart(Context context) {
-		database = new AvatarDatabase();
-		
 		context.getAdvisory().listen("User.Disconnected", (String userID) -> {
 			avatars.remove(userID);
 			System.out.println("User Disconnected" + userID + " player left: " + avatars.size());
 		});
 	}
 	
-	@OnStop
-	public void onStop(Context context) { 
-		database.shutdown();
-	}
-	
 	@MessageListener(uri="/credits/balance")
 	public Response balanceCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		String playerID = String.format("Player.%s", userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
 		return new Response(StatusCode.OK, Integer.toString(avatar.getCredits()));
 	}
 	
 	@MessageListener(uri="/credits/add")
 	public Response addCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = String.format("Player.%s", userID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 		int amount = Integer.parseInt(request.getData());
 		int balance = avatar.getCredits() + amount;
 
-		// TODO: Not Acomic Yet because of additional effort for real
-		// transactions
-		database.updateAvatar(userID, avatar.getName(), (AvatarValues tmp) -> {
-			tmp.setCredits(balance);
-			return tmp;
-		});
-		context.sendEvent(userID, "OnCreditsChanged", Integer.toString(balance));
+		store.getSub(playerID).set("credits", balance);
+
+		context.sendEvent(userID, Event.CreditsChanged, Integer.toString(balance));
 		return new Response(StatusCode.OK, Integer.toString(balance));
 	}
 	
 	@MessageListener(uri="/credits/remove")
 	public Response removeCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = String.format("Player.%s", userID);
 		AvatarValues avatar = getCurrentAvatar(userID);
 
 		int amount = Integer.parseInt(request.getData());
 		if (avatar.getCredits() >= amount) {
 			int balance = avatar.getCredits() - amount;
-			database.updateAvatar(userID, avatar.getName(), (AvatarValues tmp) -> {
-				tmp.setCredits(balance);
-				return tmp;
-			});
-			context.sendEvent(userID, "OnCreditsChanged", Integer.toString(balance));
+			store.getSub(playerID).set("credits", balance);
+			context.sendEvent(userID, Event.CreditsChanged, Integer.toString(balance));
 			return new Response(StatusCode.OK, Integer.toString(balance));
 		} else {
 			return new Response(StatusCode.NOT_ACCEPTABLE, "Insufficient Credits");
@@ -110,53 +93,34 @@ public class AvatarService {
 	@MessageListener(uri="/land")
 	public Response land(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		String playerID = String.format("Player.%s", userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
 
 		if (avatar.getLanded())
 			return new Response(StatusCode.BAD_REQUEST, "Already Landed");
 
+		avatar.setLanded(true);
+		avatar.setPoiID(request.getData());
 		
-		String regionId = avatar.getRegionID();
-		String queue = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", regionId).toString() + "/land";
-		System.out.println("SENDING LAND: " + queue);
-		Response landResponse = context.sendRequestBlocking(queue, request);
-
-		if (landResponse.getStatus() != StatusCode.OK)
-			return landResponse;
-
-		database.updateAvatar(userID, avatar.getName(), (AvatarValues tmp) -> {
-			tmp.setPosition(landResponse.getParameters().getVector2(ParameterCode.POSITION));
-			tmp.setPoiID(landResponse.getParameters().getString(ParameterCode.POI_ID));
-			tmp.setLanded(true);
-			return tmp;
-		});
-
-		System.out.println(avatar.getName() + " lands on " + landResponse.getParameters().getString(ParameterCode.POI_ID));
+		store.getSub(playerID).getMap("avatars").put(avatar.getName(), avatar);
+		sendAvatarChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
 	}
 
 	@MessageListener(uri="/takeoff")
 	public Response takeoff(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		String playerID = String.format("Player.%s", userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
 
 		if (!avatar.getLanded())
 			return new Response(StatusCode.BAD_REQUEST, "Already InSpace");
 
-		String regionId = avatar.getRegionID();
-		String queue = ScriptExecutor.INSTANCE.invokeFunction("regionAddress", regionId).toString() + "/takeoff";
-		System.out.println("SENDING TAKEOFF: " + queue);
-		Response takeoffResponse = context.sendRequestBlocking(queue, request);
+		avatar.setLanded(false);
+		avatar.setPoiID(null);
 
-		if (takeoffResponse.getStatus() != StatusCode.OK)
-			return takeoffResponse;
-
-		database.updateAvatar(userID, avatar.getName(), (AvatarValues tmp) -> {
-			tmp.setLanded(false);
-			return tmp;
-		});
-
-		System.out.println(avatar.getName() + " takeoff ");
+		store.getSub(playerID).getMap("avatars").put(avatar.getName(), avatar);
+		sendAvatarChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
 	}
 
@@ -312,9 +276,13 @@ public class AvatarService {
 	private void sendAvailableAvatarsChangedEvent(Context context, String userID) {
 		String playerID = String.format("Player.%s", userID);
 		Player player = store.get(playerID, Player.class);
-		
-		String data = Serialization.serialize(player.getAvatars());
-		context.sendEvent(userID, Event.AvailableAvatarsChanged, data);
+		context.sendEvent(userID, Event.AvailableAvatarsChanged, Serialization.serialize(player.getAvatars()));
+	}
+	
+	private void sendAvatarChangedEvent(Context context, String userID) {
+		String playerID = String.format("Player.%s", userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
+		context.sendEvent(userID, Event.AvatarChanged, Serialization.serialize(avatar));
 	}
 	
 //	private void sendReputationChangedEvent(Context context, String userID, String avatarName) {

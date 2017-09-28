@@ -2,7 +2,11 @@
   "name": "Event",
   "variables": [
     "RegionReady",
+    "AvatarChanged",
     "AvailableAvatarsChanged",
-    "ReputationChanged"
+    "VehicleChanged",
+    "AvailableVehiclesChanged",
+    "ReputationChanged",
+    "CreditsChanged"
   ]
 }
