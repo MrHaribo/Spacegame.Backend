@@ -10,7 +10,6 @@ import java.util.Map;
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
 import micronet.annotation.OnStart;
-import micronet.annotation.OnStop;
 import micronet.datastore.DataStore;
 import micronet.network.Context;
 import micronet.network.Request;
@@ -20,7 +19,6 @@ import micronet.serialization.Serialization;
 
 @MessageService(uri="mn://vehicle")
 public class VehicleService {
-	private VehicleDatabase database;
 	private DataStore store = new DataStore();
 
 	private Map<String, VehicleValues> vehicleConfigurations = new HashMap<>();
@@ -28,7 +26,6 @@ public class VehicleService {
 
 	@OnStart
 	public void onStart(Context context) {
-		database = new VehicleDatabase();
 		
 		for (File cfgFile : new File("vehicle_configurations").listFiles()) {
 			try {
@@ -45,15 +42,10 @@ public class VehicleService {
 		defaultVehicles.put("Neutral", vehicleConfigurations.get("Drone"));
 	}
 
-	@OnStop
-	public void onStop(Context context) {
-		database.shutdown();
-	}
 
 	@MessageListener(uri = "/configuration/all/upload")
 	public Response uploadAllConfigurations(Context context, Request request) {
 		VehicleValues[] vehicles = Serialization.deserialize(request.getData(), VehicleValues[].class);
-		//database.saveVehicleConfigurations(vehicles);
 		
 		for (VehicleValues vehicle : vehicles) {
 			try {
@@ -150,10 +142,11 @@ public class VehicleService {
 		String playerID = String.format("Player.%s", userID);
 		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
 		VehicleValues[] vehicles = store.getSub(playerID).get(vehicleListID, VehicleValues[].class);
+		int vehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatarName, Integer.class);
 		
 		String data = Serialization.serialize(vehicles);
 		Response response = new Response(StatusCode.OK, data);
-		response.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, avatarName));
+		response.getParameters().set(ParameterCode.INDEX, vehicleIndex);
 		return response;
 	}
 
@@ -193,7 +186,9 @@ public class VehicleService {
 
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
-		VehicleValues vehicle = database.getCurrentVehicle(userID, avatar.getName());
+		
+		String playerID = String.format("Player.%s", userID);
+		VehicleValues vehicle = getCurrentVehicle(playerID, avatar.getName());
 
 		Request itemRequest = new Request();
 		itemRequest.getParameters().set(ParameterCode.USER_ID, userID);
@@ -223,8 +218,8 @@ public class VehicleService {
 		if (removeResponse.getStatus() != StatusCode.OK)
 			return new Response(StatusCode.INTERNAL_SERVER_ERROR, "Weapon missing in inventory");
 
-		int currentVehicleIndex = database.getCurrentVehicleIndex(userID, avatar.getName());
-		database.updateVehicle(userID, avatar.getName(), currentVehicleIndex, vehicle);
+		int vehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatar.getName(), Integer.class);
+		store.getSub(playerID).getSub("vehicles").getMap("vehicles").get(avatar.getName()).asList().set(vehicleIndex, vehicle);
 		sendVehicleChangedEvent(context, userID, avatar.getName());
 		return new Response(StatusCode.OK);
 	}
@@ -240,8 +235,9 @@ public class VehicleService {
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		String playerID = String.format("Player.%s", userID);
 		String weaponType = request.getParameters().getString(ParameterCode.ID);
-		VehicleValues vehicle = database.getCurrentVehicle(userID, avatar.getName());
+		VehicleValues vehicle = getCurrentVehicle(playerID, avatar.getName());
 
 		ItemValues item = null;
 
@@ -270,24 +266,36 @@ public class VehicleService {
 			vehicle.getHeavyWeapons().set(indices[0], null);
 			break;
 		}
-		int currentVehicleIndex = database.getCurrentVehicleIndex(userID, avatar.getName());
-		database.updateVehicle(userID, avatar.getName(), currentVehicleIndex, vehicle);
+		
+		int vehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatar.getName(), Integer.class);
+		store.getSub(playerID).getSub("vehicles").getMap("vehicles").get(avatar.getName()).asList().set(vehicleIndex, vehicle);
 		sendVehicleChangedEvent(context, userID, avatar.getName());
 		return new Response(StatusCode.OK);
 	}
+	
+	private VehicleValues getCurrentVehicle(String playerID, String avatarName) {
+		int currentVehicleIndex = store.getSub(playerID).getMap("vehicles.currentVehicles").get(avatarName, Integer.class);
+		return store.getSub(playerID).getSub("vehicles").getMap("vehicles").get(avatarName).asList().get(currentVehicleIndex, VehicleValues.class);
+	}
 
 	private void sendVehicleChangedEvent(Context context, String userID, String avatarName) {
-		VehicleValues vehicle = database.getCurrentVehicle(userID, avatarName);
+		String playerID = String.format("Player.%s", userID);
+		VehicleValues vehicle = getCurrentVehicle(playerID, avatarName);
+		int vehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatarName, Integer.class);
+		
 		Request eventRequest = new Request(Serialization.serialize(vehicle));
-		eventRequest.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, avatarName));
+		eventRequest.getParameters().set(ParameterCode.INDEX, vehicleIndex);
 		context.sendEvent(userID, Event.VehicleChanged, eventRequest);
 	}
 
-	private void sendAvailableVehiclesChangedEvent(Context context, String userID, String name) {
-		// TODO: Don't serialize whole ship list, only delta
-		VehicleValues[] vehicles = database.getVehicles(userID, name);
+	private void sendAvailableVehiclesChangedEvent(Context context, String userID, String avatarName) {
+		String playerID = String.format("Player.%s", userID);
+		String vehicleListID = String.format("vehicles.vehicles.%s", avatarName);
+		VehicleValues[] vehicles = store.getSub(playerID).get(vehicleListID, VehicleValues[].class);
+		int vehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatarName, Integer.class);
+
 		Request eventRequest = new Request(Serialization.serialize(vehicles));
-		eventRequest.getParameters().set(ParameterCode.INDEX, database.getCurrentVehicleIndex(userID, name));
+		eventRequest.getParameters().set(ParameterCode.INDEX, vehicleIndex);
 		context.sendEvent(userID, Event.AvailableVehiclesChanged, eventRequest); 
 	}
 }
