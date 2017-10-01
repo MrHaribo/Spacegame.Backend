@@ -236,17 +236,19 @@ public class VehicleService {
 
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String playerID = String.format("Player.%s", userID);
-		String weaponType = request.getParameters().getString(ParameterCode.ID);
+		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
 		VehicleValues vehicle = getCurrentVehicle(playerID, avatar.getName());
 
 		ItemValues item = null;
 
 		switch (weaponType) {
-		case "PrimaryWeapon":
+		case PrimaryWeapon:
 			item = new ItemValues(vehicle.getPrimaryWeapons().get(indices[0]), ItemType.PrimaryWeapon);
 			break;
-		case "HeavyWeapon":
+		case HeavyWeapon:
 			item = new ItemValues(vehicle.getHeavyWeapons().get(indices[0]), ItemType.HeavyWeapon);
+			break;
+		default:
 			break;
 		}
 
@@ -259,11 +261,13 @@ public class VehicleService {
 			return new Response(StatusCode.FORBIDDEN, "Inventory Slot not empty");
 
 		switch (weaponType) {
-		case "PrimaryWeapon":
+		case PrimaryWeapon:
 			vehicle.getPrimaryWeapons().set(indices[0], null);
 			break;
-		case "HeavyWeapon":
+		case HeavyWeapon:
 			vehicle.getHeavyWeapons().set(indices[0], null);
+			break;
+		default:
 			break;
 		}
 		

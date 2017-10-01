@@ -1,0 +1,34 @@
+{
+  "name": "ItemCollection",
+  "parent": null,
+  "variables": [
+    {
+      "name": "inventory",
+      "type": {
+        "keyType": {
+          "type": "STRING"
+        },
+        "entryType": {
+          "entryType": {
+            "componentType": "ItemValues",
+            "type": "COMPONENT"
+          },
+          "type": "LIST"
+        },
+        "type": "MAP"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "storage",
+      "type": {
+        "entryType": {
+          "componentType": "ItemValues",
+          "type": "COMPONENT"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    }
+  ]
+}

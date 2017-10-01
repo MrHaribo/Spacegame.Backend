@@ -1,0 +1,35 @@
+{
+  "name": "ShopValues",
+  "parent": null,
+  "variables": [
+    {
+      "name": "items",
+      "type": {
+        "entryType": {
+          "componentType": "ItemValues",
+          "type": "COMPONENT"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "rankRestriction",
+      "type": {
+        "entryType": {
+          "numberType": "INT",
+          "type": "NUMBER"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "faction",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
+    }
+  ]
+}

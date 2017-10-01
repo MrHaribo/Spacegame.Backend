@@ -37,6 +37,14 @@
         "type": "COMPONENT"
       },
       "ctorArg": false
+    },
+    {
+      "name": "items",
+      "type": {
+        "componentType": "ItemCollection",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
     }
   ]
 }

@@ -1,6 +1,7 @@
 package Spacegame.GatewayService;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 
 import micronet.activemq.AMQGatewayPeer;
@@ -24,7 +25,7 @@ public class GatewayService {
 	
 	private ConnectionStore connections = new ConnectionStore();
 	
-	private DataStore store = new DataStore();
+	private static DataStore store = new DataStore();
 
 	@OnStart
 	public void onStart(Context context) {
@@ -80,8 +81,8 @@ public class GatewayService {
 
 		switch (userRequest) {
 		case "mn://login":
-			if (connection != null)
-				return new Response(StatusCode.FORBIDDEN, "Already logged in");
+//			if (connection != null)
+//				return new Response(StatusCode.FORBIDDEN, "Already logged in");
 			String userID = request.getData();
 			connection = connections.getConnectionFromUser(userID);
 			if (connection != null)
@@ -113,7 +114,7 @@ public class GatewayService {
 		}
 	}
 
-	private Player createPlayer(String userID) {
+	private static Player createPlayer(String userID) {
 		Player player;
 		player = new Player(userID);
 		player.setAvatars(new HashMap<>());
@@ -121,6 +122,10 @@ public class GatewayService {
 		player.setVehicles(new VehicleCollection());
 		player.getVehicles().setVehicles(new HashMap<>());
 		player.getVehicles().setCurrentVehicles(new HashMap<>());
+		
+		player.setItems(new ItemCollection());
+		player.getItems().setInventory(new HashMap<>());
+		player.getItems().setStorage(Collections.nCopies(20, null));
 		return player;
 	}
 }

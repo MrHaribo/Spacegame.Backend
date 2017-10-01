@@ -218,6 +218,7 @@ public class AvatarService {
 		createCollectionRequest.getParameters().set(ParameterCode.USER_ID, userID);
 		createCollectionRequest.getParameters().set(ParameterCode.FACTION, faction);
 		context.sendRequest("mn://vehicle/collection/create", createCollectionRequest);
+		context.sendRequest("mn://item/inventory/create", createCollectionRequest);
 
 		sendAvailableAvatarsChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
