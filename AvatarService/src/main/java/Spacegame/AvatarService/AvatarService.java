@@ -42,11 +42,11 @@ public class AvatarService {
 	public Response addCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String playerID = String.format("Player.%s", userID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
 		int amount = Integer.parseInt(request.getData());
 		int balance = avatar.getCredits() + amount;
-
-		store.getSub(playerID).set("credits", balance);
+		
+		store.getSub(playerID).getMap("avatars").get(avatar.getName()).set("credits", balance);
 
 		context.sendEvent(userID, Event.CreditsChanged, Integer.toString(balance));
 		return new Response(StatusCode.OK, Integer.toString(balance));
@@ -56,12 +56,12 @@ public class AvatarService {
 	public Response removeCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String playerID = String.format("Player.%s", userID);
-		AvatarValues avatar = getCurrentAvatar(userID);
+		AvatarValues avatar = getCurrentAvatar(playerID);
 
 		int amount = Integer.parseInt(request.getData());
 		if (avatar.getCredits() >= amount) {
 			int balance = avatar.getCredits() - amount;
-			store.getSub(playerID).set("credits", balance);
+			store.getSub(playerID).getMap("avatars").get(avatar.getName()).set("credits", balance);
 			context.sendEvent(userID, Event.CreditsChanged, Integer.toString(balance));
 			return new Response(StatusCode.OK, Integer.toString(balance));
 		} else {

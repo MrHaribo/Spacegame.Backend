@@ -1,0 +1,95 @@
+{
+  "items": [
+    {
+      "name": "Mice",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "Eagle",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 600
+    },
+    {
+      "name": "Delta",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 720
+    },
+    {
+      "name": "Worker",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 550
+    },
+    {
+      "name": "Humble",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 2000
+    },
+    {
+      "name": "LaserBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 80
+    },
+    {
+      "name": "RocketLauncher",
+      "type": "HeavyWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "FireBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "IceBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "GaussBeam",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 300
+    },
+    {
+      "name": "TorpedoPod",
+      "type": "HeavyWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    }
+  ],
+  "rankRestriction": [
+    0,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    2,
+    3
+  ],
+  "faction": "Rebel"
+}

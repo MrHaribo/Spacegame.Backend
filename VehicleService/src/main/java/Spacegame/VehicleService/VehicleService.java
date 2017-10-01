@@ -68,9 +68,9 @@ public class VehicleService {
 		if (!avatar.getLanded())
 			return new Response(StatusCode.FORBIDDEN, "Must be landed to change Ship");
 
+		String playerID = String.format("Player.%s", userID);
 		int vehicleIndex = Integer.parseInt(request.getData());
-		String vehicleCollectionID = String.format("Player.%s.vehicles", userID);
-		store.getSub(vehicleCollectionID).getMap("currentVehicles").add(avatar.getName(), vehicleIndex);
+		store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").put(avatar.getName(), vehicleIndex);
 		sendVehicleChangedEvent(context, userID, avatar.getName());
 		return new Response(StatusCode.OK);
 	}
@@ -83,7 +83,7 @@ public class VehicleService {
 
 		String playerID = String.format("Player.%s", userID);
 		int vehicleIndex = Integer.parseInt(request.getData());
-		int currentVehicleIndex = store.getSub(playerID).getMap("vehicles.currentVehicles").get(avatarName, Integer.class);
+		int currentVehicleIndex = store.getSub(playerID).getSub("vehicles").getMap("currentVehicles").get(avatarName, Integer.class);
 		if (currentVehicleIndex == vehicleIndex)
 			return new Response(StatusCode.FORBIDDEN, "Cannot Sell Ship in use");
 
@@ -185,7 +185,7 @@ public class VehicleService {
 			return new Response(StatusCode.FORBIDDEN, "Weapons can only be changed when landed");
 
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
+		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.TYPE));
 		
 		String playerID = String.format("Player.%s", userID);
 		VehicleValues vehicle = getCurrentVehicle(playerID, avatar.getName());
@@ -228,6 +228,7 @@ public class VehicleService {
 	public Response unequipWeapon(Context context, Request request) {
 		Integer[] indices = Serialization.deserialize(request.getData(), Integer[].class);
 
+		
 		Response avatarQuery = context.sendRequestBlocking("mn://avatar/current/get", request);
 		AvatarValues avatar = Serialization.deserialize(avatarQuery.getData(), AvatarValues.class);
 
@@ -236,7 +237,7 @@ public class VehicleService {
 
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String playerID = String.format("Player.%s", userID);
-		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
+		ItemType weaponType = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.TYPE));
 		VehicleValues vehicle = getCurrentVehicle(playerID, avatar.getName());
 
 		ItemValues item = null;

@@ -53,7 +53,7 @@ public class ItemService {
 		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
 		int index = request.getParameters().getInt(ParameterCode.INDEX);
 
-		store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().remove(index);
+		store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().set(index, null);
 		sendInventoryChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
 	}
@@ -65,13 +65,12 @@ public class ItemService {
 		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
 		Integer[] indices = Serialization.deserialize(request.getData(), Integer[].class);
 
-		String item1 = store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().getRaw(indices[0]);
-		String item2 = store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().getRaw(indices[1]);
+		ItemValues item1 = store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().get(indices[0], ItemValues.class);
+		ItemValues item2 = store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().get(indices[1], ItemValues.class);
 
 		if (item2 == null) {
-			
 			store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().set(indices[1], item1);
-			store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().remove(indices[0]);
+			store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().set(indices[0], null);
 		} else {
 			store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().set(indices[0], item2);
 			store.getSub(playerID).getSub("items").getMap("inventory").get(avatarName).asList().set(indices[1], item1);
@@ -135,10 +134,6 @@ public class ItemService {
 		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
 
 		String data = store.getSub(playerID).getSub("items").getMap("inventory").getRaw(avatarName);
-
-		Request event = new Request(data);
-		event.getParameters().set(ParameterCode.USER_ID, userID);
-		event.getParameters().set(ParameterCode.EVENT, "OnInventoryChanged");
-		context.sendRequest("mn://gateway/forward/event", event);
+		context.sendEvent(userID, Event.InventoryChanged, new Request(data));
 	}
 }

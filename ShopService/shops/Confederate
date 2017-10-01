@@ -1,0 +1,95 @@
+{
+  "items": [
+    {
+      "name": "Beetle",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "Scout",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 700
+    },
+    {
+      "name": "Omega",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 650
+    },
+    {
+      "name": "Shuttle",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 480
+    },
+    {
+      "name": "Avalon",
+      "type": "Vehicle",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 2000
+    },
+    {
+      "name": "LaserBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 80
+    },
+    {
+      "name": "RocketLauncher",
+      "type": "HeavyWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "FireBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "IceBlaster",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    },
+    {
+      "name": "GaussBeam",
+      "type": "PrimaryWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 300
+    },
+    {
+      "name": "TorpedoPod",
+      "type": "HeavyWeapon",
+      "quantity": 0,
+      "maxStackSize": 0,
+      "price": 100
+    }
+  ],
+  "rankRestriction": [
+    0,
+    1,
+    1,
+    1,
+    2,
+    1,
+    1,
+    2,
+    2,
+    2,
+    3
+  ],
+  "faction": "Confederate"
+}

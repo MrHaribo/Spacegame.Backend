@@ -11,6 +11,7 @@
   "POSITION",
   "REGION_ID",
   "TOKEN",
+  "TYPE",
   "USER_ID",
   "USER_REQUEST",
   "VEHICLE_IDX"
