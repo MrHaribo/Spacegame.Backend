@@ -49,8 +49,14 @@
     {
       "name": "reputation",
       "type": {
-        "componentType": "ReputationValues",
-        "type": "COMPONENT"
+        "keyType": {
+          "type": "STRING"
+        },
+        "entryType": {
+          "componentType": "ReputationValues",
+          "type": "COMPONENT"
+        },
+        "type": "MAP"
       },
       "ctorArg": false
     }

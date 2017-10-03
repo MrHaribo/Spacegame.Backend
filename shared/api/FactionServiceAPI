@@ -4,6 +4,10 @@
   "description": "",
   "listeners": [
     {
+      "listenerUri": "/reputation/add",
+      "description": ""
+    },
+    {
       "listenerUri": "/change",
       "description": ""
     },
@@ -12,7 +16,19 @@
       "description": ""
     },
     {
+      "listenerUri": "/all",
+      "description": ""
+    },
+    {
       "listenerUri": "/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/reputation/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/kill",
       "description": ""
     },
     {

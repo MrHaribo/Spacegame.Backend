@@ -118,6 +118,7 @@ public class GatewayService {
 		Player player;
 		player = new Player(userID);
 		player.setAvatars(new HashMap<>());
+		player.setReputation(new HashMap<>());
 
 		player.setVehicles(new VehicleCollection());
 		player.getVehicles().setVehicles(new HashMap<>());
@@ -127,8 +128,6 @@ public class GatewayService {
 		player.getItems().setInventory(new HashMap<>());
 		player.getItems().setStorage(Collections.nCopies(20, null));
 		
-		player.setReputation(new ReputationValues());
-		player.getReputation().setReputation(new HashMap<>());
 		return player;
 	}
 }

@@ -11,6 +11,16 @@
         "type": "LIST"
       },
       "ctorArg": false
+    },
+    {
+      "name": "factions",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "LIST"
+      },
+      "ctorArg": false
     }
   ]
 }

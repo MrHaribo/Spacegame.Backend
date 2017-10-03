@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -61,6 +62,7 @@ public class WorldService {
 
 		World world = new World();
 		world.setRegions(allRegions);
+		world.setFactions(Arrays.asList(FactionValues.Confederate, FactionValues.Rebel));
 		
 		store.upsert("World", world);
 
