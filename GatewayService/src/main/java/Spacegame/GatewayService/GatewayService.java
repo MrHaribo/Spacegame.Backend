@@ -126,6 +126,9 @@ public class GatewayService {
 		player.setItems(new ItemCollection());
 		player.getItems().setInventory(new HashMap<>());
 		player.getItems().setStorage(Collections.nCopies(20, null));
+		
+		player.setReputation(new ReputationValues());
+		player.getReputation().setReputation(new HashMap<>());
 		return player;
 	}
 }

@@ -68,27 +68,6 @@ public class AvatarService {
 			return new Response(StatusCode.NOT_ACCEPTABLE, "Insufficient Credits");
 		}
 	}
-
-//	@MessageListener(uri="/reputation/add")
-//	public void addReputation(Context context, Request request) {
-//		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-//		String attitude = request.getParameters().getString(ParameterCode.FACTION);
-//		float amount = Float.parseFloat(request.getData());
-//
-//		if (!avatars.containsKey(userID))
-//			return;
-//		String avatarName = avatars.get(userID);
-//
-//		database.updateAvatar(userID, avatarName, (AvatarValues tmp) -> {
-//			if (attitude.equals(FactionValues.AttitudeConfederate))
-//				tmp.getFaction().setConfederateReputation(tmp.getFaction().getConfederateReputation() + amount);
-//			if (attitude.equals(FactionValues.AttitudeRebel))
-//				tmp.getFaction().setRebelReputation(tmp.getFaction().getRebelReputation() + amount);
-//			return tmp;
-//		});
-//		
-//		sendReputationChangedEvent(context, userID, avatarName);
-//	}
 	
 	@MessageListener(uri="/land")
 	public Response land(Context context, Request request) {
@@ -198,16 +177,16 @@ public class AvatarService {
 		avatar.setCredits(1000);
 
 		String faction = request.getParameters().getString(ParameterCode.FACTION);
-		if (faction.equals(FactionValues.AttitudeRebel)) {
-			avatar.setFaction(FactionValues.AttitudeRebel);
+		if (faction.equals(FactionValues.Rebel)) {
+			avatar.setFaction(FactionValues.Rebel);
 			avatar.setRegionID("Region.Heulion");
 			avatar.setHomeRegionID("Region.Heulion");
-		} else if (faction.equals(FactionValues.AttitudeConfederate)) {
-			avatar.setFaction(FactionValues.AttitudeConfederate);
+		} else if (faction.equals(FactionValues.Confederate)) {
+			avatar.setFaction(FactionValues.Confederate);
 			avatar.setRegionID("Region.Central");
 			avatar.setHomeRegionID("Region.Central");
-		} else if (faction.equals(FactionValues.AttitudeNeutral)) {
-			avatar.setFaction(FactionValues.AttitudeNeutral);
+		} else if (faction.equals(FactionValues.Neutral)) {
+			avatar.setFaction(FactionValues.Neutral);
 			avatar.setRegionID("Region.Sol");
 			avatar.setHomeRegionID("Region.Sol");
 		}
@@ -219,6 +198,7 @@ public class AvatarService {
 		createCollectionRequest.getParameters().set(ParameterCode.FACTION, faction);
 		context.sendRequest("mn://vehicle/collection/create", createCollectionRequest);
 		context.sendRequest("mn://item/inventory/create", createCollectionRequest);
+		context.sendRequest("mn://faction/reputation/create", createCollectionRequest);
 
 		sendAvailableAvatarsChangedEvent(context, userID);
 		return new Response(StatusCode.OK);
@@ -285,10 +265,4 @@ public class AvatarService {
 		AvatarValues avatar = getCurrentAvatar(playerID);
 		context.sendEvent(userID, Event.AvatarChanged, Serialization.serialize(avatar));
 	}
-	
-//	private void sendReputationChangedEvent(Context context, String userID, String avatarName) {
-//		AvatarValues avatar = database.getAvatar(userID, avatarName);
-//		String data = Serialization.serialize(avatar.getFaction());
-//		context.sendEvent(userID, Event.ReputationChanged, data);
-//	}
 }

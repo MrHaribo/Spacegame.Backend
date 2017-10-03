@@ -45,6 +45,14 @@
         "type": "COMPONENT"
       },
       "ctorArg": false
+    },
+    {
+      "name": "reputation",
+      "type": {
+        "componentType": "ReputationValues",
+        "type": "COMPONENT"
+      },
+      "ctorArg": false
     }
   ]
 }

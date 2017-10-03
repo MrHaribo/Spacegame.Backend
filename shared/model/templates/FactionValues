@@ -3,50 +3,6 @@
   "parent": null,
   "variables": [
     {
-      "name": "confederateReputation",
-      "type": {
-        "numberType": "FLOAT",
-        "type": "NUMBER"
-      },
-      "ctorArg": true
-    },
-    {
-      "name": "rebelReputation",
-      "type": {
-        "numberType": "FLOAT",
-        "type": "NUMBER"
-      },
-      "ctorArg": true
-    },
-    {
-      "name": "AttitudeNeutral",
-      "type": {
-        "type": "STRING"
-      },
-      "constVar": "Neutral"
-    },
-    {
-      "name": "AttitudeConfederate",
-      "type": {
-        "type": "STRING"
-      },
-      "constVar": "Confederate"
-    },
-    {
-      "name": "AttitudeRebel",
-      "type": {
-        "type": "STRING"
-      },
-      "constVar": "Rebel"
-    },
-    {
-      "name": "AttitudeOutlaw",
-      "type": {
-        "type": "STRING"
-      },
-      "constVar": "Outlaw"
-    },
-    {
       "name": "PercentageRank1",
       "type": {
         "numberType": "FLOAT",
@@ -87,72 +43,57 @@
       "constVar": -0.8
     },
     {
-      "name": "getAttitude",
+      "name": "name",
       "type": {
-        "scriptName": "factionAttitude",
-        "memberArgs": [
-          "confederateReputation",
-          "rebelReputation",
-          "PercentageRank1",
-          "PercentageHateful",
-          "AttitudeNeutral",
-          "AttitudeConfederate",
-          "AttitudeRebel",
-          "AttitudeOutlaw"
-        ],
-        "externalArgs": {},
-        "type": "SCRIPT"
+        "type": "STRING"
       },
-      "ctorArg": false
+      "ctorArg": true
     },
     {
-      "name": "getRank",
+      "name": "Rebel",
       "type": {
-        "scriptName": "factionRank",
-        "memberArgs": [
-          "getAttitude",
-          "confederateReputation",
-          "rebelReputation",
-          "AttitudeConfederate",
-          "AttitudeRebel",
-          "PercentageRank1",
-          "PercentageRank2",
-          "PercentageRank3"
-        ],
-        "externalArgs": {},
-        "type": "SCRIPT"
+        "type": "STRING"
       },
-      "ctorArg": false
+      "constVar": "Rebel"
     },
     {
-      "name": "getName",
+      "name": "Confederate",
       "type": {
-        "scriptName": "factionName",
-        "memberArgs": [
-          "getAttitude"
-        ],
-        "externalArgs": {},
-        "type": "SCRIPT"
+        "type": "STRING"
       },
-      "ctorArg": false
+      "constVar": "Confederate"
     },
     {
-      "name": "isHostile",
+      "name": "Neutral",
       "type": {
-        "scriptName": "factionHostile",
-        "memberArgs": [
-          "AttitudeNeutral",
-          "AttitudeConfederate",
-          "AttitudeRebel",
-          "AttitudeOutlaw",
-          "getAttitude"
-        ],
-        "externalArgs": {
-          "otherAttitude": {
-            "type": "STRING"
-          }
+        "type": "STRING"
+      },
+      "constVar": "Neutral"
+    },
+    {
+      "name": "Outlaw",
+      "type": {
+        "type": "STRING"
+      },
+      "constVar": "Outlaw"
+    },
+    {
+      "name": "hostileFactions",
+      "type": {
+        "entryType": {
+          "type": "STRING"
         },
-        "type": "SCRIPT"
+        "type": "SET"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "alliedFactions",
+      "type": {
+        "entryType": {
+          "type": "STRING"
+        },
+        "type": "SET"
       },
       "ctorArg": false
     }

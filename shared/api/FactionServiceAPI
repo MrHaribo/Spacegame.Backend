@@ -1,0 +1,23 @@
+{
+  "serviceName": "FactionService",
+  "serviceUri": "mn://faction",
+  "description": "",
+  "listeners": [
+    {
+      "listenerUri": "/change",
+      "description": ""
+    },
+    {
+      "listenerUri": "/reputation/create",
+      "description": ""
+    },
+    {
+      "listenerUri": "/get",
+      "description": ""
+    },
+    {
+      "listenerUri": "/reputation/remove",
+      "description": ""
+    }
+  ]
+}

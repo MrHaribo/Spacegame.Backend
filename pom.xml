@@ -23,6 +23,7 @@
     <module>FullDB</module>
     <module>FooService</module>
     <module>mn-jst</module>
+    <module>FactionService</module>
   </modules>
 
 	<properties>
