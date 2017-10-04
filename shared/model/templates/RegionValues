@@ -117,6 +117,14 @@
         "type": "SCRIPT"
       },
       "ctorArg": false
+    },
+    {
+      "name": "matchType",
+      "type": {
+        "enumType": "MatchType",
+        "type": "ENUM"
+      },
+      "ctorArg": false
     }
   ]
 }

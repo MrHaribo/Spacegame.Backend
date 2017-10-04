@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
 
 import micronet.annotation.MessageListener;
 import micronet.annotation.MessageService;
@@ -22,8 +23,9 @@ import micronet.type.Vector2;
 @MessageService(uri="mn://world")
 public class WorldService {
 	
-	DataStore store;
-
+	private DataStore store;
+	private Random worldRandom = new Random(42);
+	
 	public static void main(String[] args) {
 		POIValues poi = new POIValues();
 		poi.setId("Earth");
@@ -39,6 +41,7 @@ public class WorldService {
 		store = new DataStore();
 		
 		List<String> allRegions = new ArrayList<>();
+		List<RegionValues> masterRegions = new ArrayList<>();
 		
 		try {
 			String regionData = new String(Files.readAllBytes(Paths.get("defaultRegions.json")));
@@ -53,7 +56,7 @@ public class WorldService {
 				
 				store.upsert(data.getId(), region);
 				allRegions.add(data.getId());
-				
+				masterRegions.add(region.getData());
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -64,12 +67,47 @@ public class WorldService {
 		world.setRegions(allRegions);
 		world.setFactions(Arrays.asList(FactionValues.Confederate, FactionValues.Rebel));
 		
-		store.upsert("World", world);
 
 		context.getAdvisory().listen("User.Disconnected", userID -> {
 			removeUserFromRegion(userID);
 			removeUserFromQueue(userID);
 		});
+		
+		for (int i = 0; i < 5; i++) {
+			int parentRegionIndex = worldRandom.nextInt(masterRegions.size());
+			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.World, LevelType.AsteroidField);
+			world.getRegions().add(childRegion.getData().getId());
+			store.upsert(childRegion.getData().getId(), childRegion);
+		}
+		store.upsert("World", world);
+	}
+	
+	private Region createChildRegion(RegionValues parentRegion, MatchType matchType, LevelType levelType) {
+		
+		String name = NameGeneration.RandomWordCapital(worldRandom.nextLong());
+		String regionID = String.format("Region.%s", name);
+		
+		float worldX = parentRegion.getWorldPosition().x + (worldRandom.nextFloat() - 0.5f) * 30.0f;
+		float worldY = parentRegion.getWorldPosition().y + (worldRandom.nextFloat() - 0.5f) * 30.0f;
+		Vector2 worldPosition = new Vector2(worldX, worldY);
+		
+		RegionValues regionData = parentRegion;
+		regionData.setMatchType(matchType);
+		regionData.setLevelType(levelType);
+		regionData.setPois(new ArrayList<>());
+		regionData.setId(regionID);
+		regionData.setName(name);
+		regionData.setSeed(worldRandom.nextFloat());
+		regionData.setWorldPosition(worldPosition);
+		regionData.setThreadLevel(parentRegion.getThreadLevel() + worldRandom.nextInt(3));
+		
+		Region region = new Region();
+		region.setStatus(RegionStatus.CLOSED);
+		region.setQueue(new HashSet<>());
+		region.setUsers(new HashSet<>());
+		region.setData(regionData);
+		
+		return region;
 	}
 
 	@MessageListener(uri = "/join")

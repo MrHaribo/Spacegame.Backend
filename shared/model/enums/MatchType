@@ -1,6 +1,7 @@
 {
   "name": "MatchType",
   "variables": [
+    "World",
     "Deathmatch"
   ]
 }
