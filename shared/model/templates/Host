@@ -16,6 +16,13 @@
         "type": "NUMBER"
       },
       "ctorArg": false
+    },
+    {
+      "name": "hostingUserID",
+      "type": {
+        "type": "STRING"
+      },
+      "ctorArg": false
     }
   ]
 }

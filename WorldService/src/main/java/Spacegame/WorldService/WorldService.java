@@ -153,6 +153,7 @@ public class WorldService {
 		Host host = Serialization.deserialize(request.getData(), Host.class);
 		if (host == null)
 			return;
+		host.setHostingUserID(userID);
 		
 		region.setStatus(RegionStatus.OPEN);
 		region.setHost(host);

@@ -69,7 +69,7 @@ public class ShopService {
 	@MessageListener(uri = "/buy")
 	public Response buy(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		ItemType type = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.ID));
+		ItemType type = Enum.valueOf(ItemType.class, request.getParameters().getString(ParameterCode.TYPE));
 		Integer[] indices = Serialization.deserialize(request.getData(), Integer[].class);
 
 		Request avatarRequest = new Request();
@@ -83,18 +83,28 @@ public class ShopService {
 		RegionValues region = store.getSub(avatar.getRegionID()).get("data", RegionValues.class);
 		
 		
+		Response factionResponse = context.sendRequestBlocking("mn://faction/reputation/get", avatarRequest);
+		ReputationValues reputation = Serialization.deserialize(factionResponse.getData(), ReputationValues.class);
 		
-//		if ((boolean)avatar.getFaction().isHostile(region.getFaction()))
-//			return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: Hostile Planet");
-//
-//		int[] rankRestrictions = database.getRankRestrictions(region.getFaction());
-//		int restriction = rankRestrictions[indices[0]];
-//		if (restriction > 0) {
-//			if (!avatar.getFaction().getName().equals(region.getFaction()))
-//				return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: You have the wrong Faction");
-//			if ((int)avatar.getFaction().getRank() < restriction)
-//				return new Response(StatusCode.FORBIDDEN, "Insufficient Rank: Required " + restriction + " (Current " + avatar.getFaction().getRank() + ")");
-//		}
+		Float rep = reputation.getReputation().get(region.getFaction());
+		if (rep != null && rep < FactionValues.PercentageHostile) {
+			return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: Hostile Planet");
+		}
+
+		List<Integer> rankRestrictions = shops.get(region.getFaction()).getRankRestriction();
+		int restriction = rankRestrictions.get(indices[0]);
+		if (restriction > 0) {
+			if (!avatar.getFaction().equals(region.getFaction()))
+				return new Response(StatusCode.FORBIDDEN, "Buy Forbidden: You have the wrong Faction");
+			
+			int rank = 0;
+			rank = rep >= FactionValues.PercentageRank1 ? 1 : rank;
+			rank = rep >= FactionValues.PercentageRank2 ? 2 : rank;
+			rank = rep >= FactionValues.PercentageRank3 ? 3 : rank;
+
+			if (rank < restriction)
+				return new Response(StatusCode.FORBIDDEN, "Insufficient Rank: Required " + restriction + " (Current " + rank + ")");
+		}
 		
 		List<ItemValues> shopItems = shops.get(region.getFaction()).getItems();
 		ItemValues itemToBuy = shopItems.get(indices[0]);

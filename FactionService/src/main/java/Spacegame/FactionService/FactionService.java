@@ -20,6 +20,9 @@ public class FactionService {
 	
 	private final float reputationIncrement = 0.1f;
 	private final float reputationDecrement = 0.2f;
+
+	private final float initialFriendlyReputation = 0.3f;
+	private final float initialHostileReputation = -0.2f;
 	
 	DataStore store = new DataStore();
 	
@@ -27,11 +30,13 @@ public class FactionService {
 	public void onStart(Context context) {
 		FactionValues faction = new FactionValues(FactionValues.Rebel);
 		faction.setHostileFactions(new HashSet<>(Arrays.asList(FactionValues.Confederate)));
+		faction.setAlliedFactions(new HashSet<>(Arrays.asList(FactionValues.Rebel)));
 		String id = String.format("Faction.%s", FactionValues.Rebel);
 		store.upsert(id, faction);
 		
 		faction = new FactionValues(FactionValues.Confederate);
 		faction.setHostileFactions(new HashSet<>(Arrays.asList(FactionValues.Rebel)));
+		faction.setAlliedFactions(new HashSet<>(Arrays.asList(FactionValues.Confederate)));		
 		id = String.format("Faction.%s", FactionValues.Confederate);
 		store.upsert(id, faction);
 	}
@@ -114,8 +119,7 @@ public class FactionService {
 				for (String alliedFaction : killedFaction.getAlliedFactions()) {
 					if (involvedPlayerReputation.getReputation().containsKey(alliedFaction)) {
 						float rep = involvedPlayerReputation.getReputation().get(alliedFaction) - reputationDecrement * 2;
-						rep = rep > 1 ? 1 : rep;
-						involvedPlayerReputation.getReputation().put(alliedFaction, rep);
+						involvedPlayerReputation.getReputation().put(alliedFaction, rep < -1 ? -1 : rep);
 					} else {
 						involvedPlayerReputation.getReputation().put(alliedFaction, 0 - reputationDecrement * 2);
 					}
@@ -123,8 +127,7 @@ public class FactionService {
 				for (String hostileFaction : killedFaction.getHostileFactions()) {
 					if (involvedPlayerReputation.getReputation().containsKey(hostileFaction)) {
 						float rep = involvedPlayerReputation.getReputation().get(hostileFaction) + reputationIncrement * 2;
-						rep = rep > 1 ? 1 : rep;
-						involvedPlayerReputation.getReputation().put(hostileFaction, rep);
+						involvedPlayerReputation.getReputation().put(hostileFaction, rep > 1 ? 1 : rep);
 					} else {
 						involvedPlayerReputation.getReputation().put(hostileFaction, 0 + reputationIncrement * 2);
 					}
@@ -132,6 +135,25 @@ public class FactionService {
 			}
 			
 			//TODO: Check for new Faction
+			String oldFaction = avatar.getFaction();
+			String newFaction = FactionValues.Outlaw;
+			
+			for (Map.Entry<String, Float> rep : involvedPlayerReputation.getReputation().entrySet()) {
+				if (rep.getValue() > 0 && newFaction.equals(FactionValues.Outlaw))
+					newFaction = FactionValues.Neutral;
+				if (rep.getValue() > FactionValues.PercentageRank1)
+					newFaction = rep.getKey();
+			}
+			
+
+			if (!newFaction.equals(oldFaction)) {
+				Request persistRequest = new Request();
+				persistRequest.getParameters().set(ParameterCode.USER_ID, involvedPlayerUserID);
+				persistRequest.getParameters().set(ParameterCode.NAME, avatar.getName());
+				persistRequest.getParameters().set(ParameterCode.FACTION, newFaction);
+				context.sendRequest("mn://avatar/persist", persistRequest);
+			}
+			
 
 			store.getSub(involvedPlayerID).getMap("reputation").put(avatar.getName(), involvedPlayerReputation);
 			sendReputationChangedEvent(context, involvedPlayerUserID);

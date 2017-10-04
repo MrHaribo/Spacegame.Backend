@@ -143,6 +143,7 @@ public class AvatarService {
 		if (avatar == null)
 			return;
 		persistAvatar(request, userID, avatar.getName());
+		sendAvatarChangedEvent(context, userID);
 	}
 
 	@MessageListener(uri="/get")
@@ -221,6 +222,7 @@ public class AvatarService {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		String avatarName = request.getParameters().getString(ParameterCode.NAME);
 		persistAvatar(request, userID, avatarName);
+		sendAvatarChangedEvent(context, userID);
 	}
 
 	private void persistAvatar(Request request, String userID, String avatarName) {
@@ -234,6 +236,10 @@ public class AvatarService {
 		if (request.getParameters().containsParameter(ParameterCode.POSITION)) {
 			Vector2 position = request.getParameters().getVector2(ParameterCode.POSITION);
 			store.getSub(playerID).set(String.format("avatars.%s.position", avatarName), position);
+		}
+		if (request.getParameters().containsParameter(ParameterCode.FACTION)) {
+			String faction = request.getParameters().getString(ParameterCode.FACTION);
+			store.getSub(playerID).set(String.format("avatars.%s.faction", avatarName), faction);
 		}
 	}
 	
@@ -263,6 +269,14 @@ public class AvatarService {
 	private void sendAvatarChangedEvent(Context context, String userID) {
 		String playerID = String.format("Player.%s", userID);
 		AvatarValues avatar = getCurrentAvatar(playerID);
-		context.sendEvent(userID, Event.AvatarChanged, Serialization.serialize(avatar));
+		String avatarData = Serialization.serialize(avatar);
+		context.sendEvent(userID, Event.AvatarChanged, avatarData);
+		
+		Region region = store.get(avatar.getRegionID(), Region.class);
+		if (region == null || region.getHost() == null)
+			return;
+		Request event = new Request(avatarData);
+		event.getParameters().set(ParameterCode.ID, userID);
+		context.sendEvent(region.getHost().getHostingUserID(), Event.AvatarChanged, event);
 	}
 }
