@@ -24,7 +24,7 @@ import micronet.type.Vector2;
 public class WorldService {
 	
 	private DataStore store;
-	private Random worldRandom = new Random(42);
+	private Random worldRandom = new Random(42 * 42);
 	
 	public static void main(String[] args) {
 		POIValues poi = new POIValues();
@@ -54,6 +54,10 @@ public class WorldService {
 				region.setUsers(new HashSet<>());
 				region.setData(data);
 				
+				float worldX = (worldRandom.nextFloat() - 0.5f) * 400f;
+				float worldY = (worldRandom.nextFloat() - 0.5f) * 400f;
+				region.getData().setWorldPosition(new Vector2(worldX, worldY));
+				
 				store.upsert(data.getId(), region);
 				allRegions.add(data.getId());
 				masterRegions.add(region.getData());
@@ -75,27 +79,27 @@ public class WorldService {
 		
 		for (int i = 0; i < 5; i++) {
 			int parentRegionIndex = worldRandom.nextInt(masterRegions.size());
-			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.World, LevelType.AsteroidField);
+			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.World, LevelType.AsteroidField, 120);
 			world.getRegions().add(childRegion.getData().getId());
 			store.upsert(childRegion.getData().getId(), childRegion);
 		}
 		
 		for (int i = 0; i < 5; i++) {
 			int parentRegionIndex = worldRandom.nextInt(masterRegions.size());
-			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.Deathmatch, LevelType.AsteroidField);
+			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.Deathmatch, LevelType.AsteroidField, 190);
 			world.getRegions().add(childRegion.getData().getId());
 			store.upsert(childRegion.getData().getId(), childRegion);
 		}
 		store.upsert("World", world);
 	}
 	
-	private Region createChildRegion(RegionValues parentRegion, MatchType matchType, LevelType levelType) {
+	private Region createChildRegion(RegionValues parentRegion, MatchType matchType, LevelType levelType, float range) {
 		
 		String name = NameGeneration.RandomWordCapital(worldRandom.nextLong());
 		String regionID = String.format("Region.%s", name);
 		
-		float worldX = parentRegion.getWorldPosition().x + (worldRandom.nextFloat() - 0.5f) * 30.0f;
-		float worldY = parentRegion.getWorldPosition().y + (worldRandom.nextFloat() - 0.5f) * 30.0f;
+		float worldX = parentRegion.getWorldPosition().x + (worldRandom.nextFloat() - 0.5f) * range;
+		float worldY = parentRegion.getWorldPosition().y + (worldRandom.nextFloat() - 0.5f) * range;
 		Vector2 worldPosition = new Vector2(worldX, worldY);
 		
 		RegionValues regionData = parentRegion;
