@@ -79,6 +79,13 @@ public class WorldService {
 			world.getRegions().add(childRegion.getData().getId());
 			store.upsert(childRegion.getData().getId(), childRegion);
 		}
+		
+		for (int i = 0; i < 5; i++) {
+			int parentRegionIndex = worldRandom.nextInt(masterRegions.size());
+			Region childRegion = createChildRegion(masterRegions.get(parentRegionIndex), MatchType.Deathmatch, LevelType.AsteroidField);
+			world.getRegions().add(childRegion.getData().getId());
+			store.upsert(childRegion.getData().getId(), childRegion);
+		}
 		store.upsert("World", world);
 	}
 	
@@ -215,11 +222,6 @@ public class WorldService {
 			allRegions.add(region);
 		}
 		return new Response(StatusCode.OK, Serialization.serialize(allRegions));
-	}
-	
-	@MessageListener(uri = "/region/battle/all")
-	public Response getAllBattleRegions(Context context, Request request) {
-		return new Response(StatusCode.OK, Serialization.serialize(new RegionValues[0]));
 	}
 	
 	private void removeUserFromRegion(String userID) {
