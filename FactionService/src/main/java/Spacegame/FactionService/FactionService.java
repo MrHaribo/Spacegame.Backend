@@ -22,7 +22,7 @@ public class FactionService {
 	private final float reputationDecrement = 0.2f;
 
 	private final float initialFriendlyReputation = 0.3f;
-	private final float initialHostileReputation = -0.2f;
+	private final float initialHostileReputation = -0.5f;
 	
 	DataStore store = new DataStore();
 	
@@ -53,12 +53,12 @@ public class FactionService {
 		
 		switch (faction) {
 		case FactionValues.Rebel:
-			rep.getReputation().put(FactionValues.Rebel, 0.3f);
-			rep.getReputation().put(FactionValues.Confederate, -0.5f);
+			rep.getReputation().put(FactionValues.Rebel, initialFriendlyReputation);
+			rep.getReputation().put(FactionValues.Confederate, initialHostileReputation);
 			break;
 		case FactionValues.Confederate:
-			rep.getReputation().put(FactionValues.Rebel, -0.5f);
-			rep.getReputation().put(FactionValues.Confederate, 0.3f);
+			rep.getReputation().put(FactionValues.Rebel, initialHostileReputation);
+			rep.getReputation().put(FactionValues.Confederate, initialFriendlyReputation);
 			break;
 			default:
 		}
@@ -70,7 +70,9 @@ public class FactionService {
 	public Response getReputation(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
 		ReputationValues rep = getReputation(context, userID);
-		return new Response(StatusCode.OK, Serialization.serialize(rep));
+		Response response = new Response(StatusCode.OK, Serialization.serialize(rep));
+		response.getParameters().set(ParameterCode.FACTION, getFaction(rep));
+		return response;
 	}
 	
 	@MessageListener(uri = "/reputation/add")
@@ -136,16 +138,8 @@ public class FactionService {
 			
 			//TODO: Check for new Faction
 			String oldFaction = avatar.getFaction();
-			String newFaction = FactionValues.Outlaw;
+			String newFaction = getFaction(involvedPlayerReputation);
 			
-			for (Map.Entry<String, Float> rep : involvedPlayerReputation.getReputation().entrySet()) {
-				if (rep.getValue() > 0 && newFaction.equals(FactionValues.Outlaw))
-					newFaction = FactionValues.Neutral;
-				if (rep.getValue() > FactionValues.PercentageRank1)
-					newFaction = rep.getKey();
-			}
-			
-
 			if (!newFaction.equals(oldFaction)) {
 				Request persistRequest = new Request();
 				persistRequest.getParameters().set(ParameterCode.USER_ID, involvedPlayerUserID);
@@ -153,12 +147,22 @@ public class FactionService {
 				persistRequest.getParameters().set(ParameterCode.FACTION, newFaction);
 				context.sendRequest("mn://avatar/persist", persistRequest);
 			}
-			
 
 			store.getSub(involvedPlayerID).getMap("reputation").put(avatar.getName(), involvedPlayerReputation);
 			sendReputationChangedEvent(context, involvedPlayerUserID);
 		}
 		
+	}
+	
+	private String getFaction(ReputationValues reputation) {
+		String result = FactionValues.Outlaw;
+		for (Map.Entry<String, Float> rep : reputation.getReputation().entrySet()) {
+			if (rep.getValue() > FactionValues.PercentageHostile && result.equals(FactionValues.Outlaw))
+				result = FactionValues.Neutral;
+			if (rep.getValue() > FactionValues.PercentageRank1)
+				result = rep.getKey();
+		}
+		return result;
 	}
 	
 	@MessageListener(uri = "/all")
@@ -194,7 +198,9 @@ public class FactionService {
 	
 	private void sendReputationChangedEvent(Context context, String userID) {
 		ReputationValues rep = getReputation(context, userID);
-		context.sendEvent(userID, Event.ReputationChanged, Serialization.serialize(rep));
+		Request event = new Request(Serialization.serialize(rep));
+		event.getParameters().set(ParameterCode.FACTION, getFaction(rep));
+		context.sendEvent(userID, Event.ReputationChanged, event);
 	}
 	
 	private ReputationValues getReputation(Context context, String userID) {
