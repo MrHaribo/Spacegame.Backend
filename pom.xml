@@ -24,6 +24,7 @@
     <module>FooService</module>
     <module>mn-jst</module>
     <module>FactionService</module>
+    <module>SteamService</module>
   </modules>
 
 	<properties>

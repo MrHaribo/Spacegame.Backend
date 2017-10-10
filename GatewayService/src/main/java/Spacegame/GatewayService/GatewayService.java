@@ -25,6 +25,8 @@ public class GatewayService {
 	
 	private ConnectionStore connections = new ConnectionStore();
 	
+	private boolean useSteam = true;
+	
 	private static DataStore store = new DataStore();
 
 	@OnStart
@@ -83,7 +85,16 @@ public class GatewayService {
 		case "mn://login":
 //			if (connection != null)
 //				return new Response(StatusCode.FORBIDDEN, "Already logged in");
+			
 			String userID = request.getData();
+			if (useSteam) {
+				String steamTicket = request.getData();
+				Response steamAuthResponse = context.sendRequestBlocking("mn://steam/login", new Request(steamTicket));
+				if (steamAuthResponse.getStatus() != StatusCode.OK)
+					return new Response(StatusCode.FORBIDDEN, "Steam Login Failed!");
+				userID = steamAuthResponse.getData();				
+			}
+			
 			connection = connections.getConnectionFromUser(userID);
 			if (connection != null)
 				connections.remove(connection.getConnectionID());

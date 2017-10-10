@@ -1,0 +1,11 @@
+{
+  "serviceName": "SteamService",
+  "serviceUri": "mn://steam",
+  "description": "",
+  "listeners": [
+    {
+      "listenerUri": "/login",
+      "description": ""
+    }
+  ]
+}
