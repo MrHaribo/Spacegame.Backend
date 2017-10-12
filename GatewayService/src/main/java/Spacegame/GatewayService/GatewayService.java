@@ -23,11 +23,10 @@ public class GatewayService {
 
 	private AMQGatewayPeer gatewayPeer;
 	
-	private ConnectionStore connections = new ConnectionStore();
-	
-	private boolean useSteam = true;
+	private boolean useSteam = false;
 	
 	private static DataStore store = new DataStore();
+	private ConnectionStore connections = new ConnectionStore(store.getCluster());
 
 	@OnStart
 	public void onStart(Context context) {

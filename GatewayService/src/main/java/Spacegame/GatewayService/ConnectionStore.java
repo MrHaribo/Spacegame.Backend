@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Cluster;
-import com.couchbase.client.java.CouchbaseCluster;
 import com.couchbase.client.java.document.JsonDocument;
 import com.couchbase.client.java.document.json.JsonArray;
 import com.couchbase.client.java.document.json.JsonObject;
@@ -20,13 +19,9 @@ public class ConnectionStore {
 	
 	private static final int connectionTimeout = 3000;
 	
-	private Cluster cluster;
 	private Bucket bucket;
 
-	public ConnectionStore() {
-		String connectionString = System.getenv("couchbase_address") != null ? System.getenv("couchbase_address") : "localhost";
-		System.out.println("Connecting to Couchbase: " + connectionString);
-		cluster = CouchbaseCluster.create(connectionString);
+	public ConnectionStore(Cluster cluster) {
 		bucket = cluster.openBucket("user_connections");
         bucket.bucketManager().createN1qlPrimaryIndex(true, false);
 	}
