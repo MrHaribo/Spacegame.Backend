@@ -39,8 +39,11 @@ public class AvatarService {
 	}
 	
 	@MessageListener(uri="/credits/add")
-	public Response addCredits(Context context, Request request) {
+	public void addCredits(Context context, Request request) {
 		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		if (request.getParameters().containsParameter(ParameterCode.ID))
+			userID = request.getParameters().getString(ParameterCode.ID);
+		
 		String playerID = String.format("Player.%s", userID);
 		AvatarValues avatar = getCurrentAvatar(playerID);
 		int amount = Integer.parseInt(request.getData());
@@ -49,7 +52,6 @@ public class AvatarService {
 		store.getSub(playerID).getMap("avatars").get(avatar.getName()).set("credits", balance);
 
 		context.sendEvent(userID, Event.CreditsChanged, Integer.toString(balance));
-		return new Response(StatusCode.OK, Integer.toString(balance));
 	}
 	
 	@MessageListener(uri="/credits/remove")

@@ -18,8 +18,8 @@ import micronet.serialization.Serialization;
 @MessageService(uri = "mn://faction")
 public class FactionService {
 	
-	private final float reputationIncrement = 0.1f;
-	private final float reputationDecrement = 0.2f;
+	private final float reputationIncrement = 0.02f;
+	private final float reputationDecrement = 0.1f;
 
 	private final float initialFriendlyReputation = 0.3f;
 	private final float initialHostileReputation = -0.5f;
@@ -77,6 +77,29 @@ public class FactionService {
 	
 	@MessageListener(uri = "/reputation/add")
 	public void addReputation(Context context, Request request) {
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		if (request.getParameters().containsParameter(ParameterCode.ID))
+			userID = request.getParameters().getString(ParameterCode.ID);
+		
+		String playerID = String.format("Player.%s", userID);
+		String avatarName = store.getSub(playerID).get("currentAvatar", String.class);
+		ReputationValues rep = store.getSub(playerID).getMap("reputation").get(avatarName, ReputationValues.class);
+		
+		String factionName = request.getParameters().getString(ParameterCode.FACTION);
+		
+		float currentRep = 0;
+		if (rep.getReputation().containsKey(factionName)) {
+			currentRep = rep.getReputation().get(factionName);
+		}
+		
+		currentRep += Float.parseFloat(request.getData());
+		currentRep = currentRep > 1 ? 1 : currentRep;
+		currentRep = currentRep < -1 ? -1 : currentRep;
+		
+		rep.getReputation().put(factionName, currentRep);
+		store.getSub(playerID).getMap("reputation").put(avatarName, rep);
+		
+		sendReputationChangedEvent(context, userID);
 	}
 	
 	@MessageListener(uri = "/reputation/remove")
