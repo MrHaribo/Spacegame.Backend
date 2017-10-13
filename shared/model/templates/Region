@@ -11,14 +11,6 @@
       "ctorArg": false
     },
     {
-      "name": "host",
-      "type": {
-        "componentType": "Host",
-        "type": "COMPONENT"
-      },
-      "ctorArg": false
-    },
-    {
       "name": "data",
       "type": {
         "componentType": "RegionValues",
@@ -43,6 +35,14 @@
           "type": "STRING"
         },
         "type": "SET"
+      },
+      "ctorArg": false
+    },
+    {
+      "name": "host",
+      "type": {
+        "componentType": "Host",
+        "type": "COMPONENT"
       },
       "ctorArg": false
     }

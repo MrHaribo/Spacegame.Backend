@@ -145,11 +145,18 @@ public class WorldService {
 			return new Response(StatusCode.OK, Serialization.serialize(region.getHost()));
 		case CLOSED:
 			//TODO: Timeout if User does not create Map
+			Host host = new Host();
+			host.setInstanceID(region.getData().getId());
+			host.setPassword("foo");
+			host.setHostingUserID(userID);
+			region.setHost(host);
+			
+			store.getSub(region.getData().getId()).upsert("host", host);
 			store.getSub(region.getData().getId()).set("status", RegionStatus.OPENING);
 			store.getSub(region.getData().getId()).getList("queue").append(userID);
-			return new Response(StatusCode.ACCEPTED);
+			return new Response(StatusCode.ACCEPTED, Serialization.serialize(host));
 		case OPENING:
-			region.getQueue().add(region.getData().getId());
+			region.getQueue().add(userID);
 			store.getSub(region.getData().getId()).set("queue", region.getQueue());
 			return new Response(StatusCode.TEMPORARY_REDIRECT);
 		default:
@@ -157,7 +164,33 @@ public class WorldService {
 		}
 	}
 	
-
+	@MessageListener(uri = "/region/ready")
+	public void readyRegion(Context context, Request request) {
+		System.out.println("Region Ready");
+		String userID = request.getParameters().getString(ParameterCode.USER_ID);
+		
+		String query = "SELECT b.* FROM entities b WHERE ARRAY_CONTAINS(queue, $1)";
+		Region region = store.query(query, Region.class, userID);
+		
+		if (region == null) {
+			query = "SELECT b.* FROM entities b WHERE ARRAY_CONTAINS(users, $1)";
+			region = store.query(query, Region.class, userID);
+		}
+		
+		if (region == null)
+			return;
+		
+		region.setStatus(RegionStatus.OPEN);
+		
+		for (String queuedUserID : region.getQueue()) {
+			region.getUsers().add(queuedUserID);
+			if (!queuedUserID.equals(userID))
+				context.sendEvent(queuedUserID, Event.RegionReady, Serialization.serialize(region.getHost()));
+		}
+		
+		region.getQueue().clear();
+		store.upsert(region.getData().getId(), region);
+	}
 	
 	@MessageListener(uri = "/region/current/get")
 	public Response getCurrentRegion(Context context, Request request) {
@@ -183,40 +216,6 @@ public class WorldService {
 		removeUserFromRegion(userID);
 	}
 		
-	@MessageListener(uri = "/region/ready")
-	public void readyRegion(Context context, Request request) {
-		System.out.println("Region Ready");
-		String userID = request.getParameters().getString(ParameterCode.USER_ID);
-		
-		String query = "SELECT b.* FROM entities b WHERE ARRAY_CONTAINS(queue, $1)";
-		Region region = store.query(query, Region.class, userID);
-		
-		if (region == null) {
-			query = "SELECT b.* FROM entities b WHERE ARRAY_CONTAINS(users, $1)";
-			region = store.query(query, Region.class, userID);
-		}
-		
-		if (region == null)
-			return;
-		
-		Host host = Serialization.deserialize(request.getData(), Host.class);
-		if (host == null)
-			return;
-		host.setHostingUserID(userID);
-		
-		region.setStatus(RegionStatus.OPEN);
-		region.setHost(host);
-		
-		for (String queuedUserID : region.getQueue()) {
-			region.getUsers().add(queuedUserID);
-			if (!queuedUserID.equals(userID))
-				context.sendEvent(queuedUserID, Event.RegionReady, request.getData());
-		}
-		
-		region.getQueue().clear();
-		store.upsert(region.getData().getId(), region);
-	}
-	
 	@MessageListener(uri = "/region/all")
 	public Response getAllRegions(Context context, Request request) {
 		String[] allRegionIDs = store.getSub("World").get("regions", String[].class);

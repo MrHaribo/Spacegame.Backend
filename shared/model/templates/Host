@@ -3,22 +3,21 @@
   "parent": null,
   "variables": [
     {
-      "name": "ip",
+      "name": "hostingUserID",
       "type": {
         "type": "STRING"
       },
       "ctorArg": false
     },
     {
-      "name": "port",
+      "name": "instanceID",
       "type": {
-        "numberType": "INT",
-        "type": "NUMBER"
+        "type": "STRING"
       },
       "ctorArg": false
     },
     {
-      "name": "hostingUserID",
+      "name": "password",
       "type": {
         "type": "STRING"
       },
